@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% block title %}My Profile - ShopEase{% endblock %}
+{% block extra_css %}
+<style>
+  .profile-header{background:linear-gradient(135deg,#0d1b3e,#162447);padding:40px 0;color:white;}
+  .form-card{background:#fff;border-radius:16px;padding:28px;box-shadow:0 4px 15px rgba(0,0,0,0.07);margin-bottom:20px;}
+  .form-card h5{font-weight:800;color:#0d1b3e;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid #f5a623;display:inline-block;}
+  .form-label{font-weight:700;color:#0d1b3e;font-size:0.88rem;margin-bottom:6px;}
+  .form-control{border:1.5px solid #dee2e6;border-radius:10px;padding:10px 14px;font-size:0.9rem;}
+  .form-control:focus{border-color:#0d1b3e;box-shadow:0 0 0 3px rgba(13,27,62,0.1);}
+  .form-control:disabled{background:#f8f9fa;color:#888;}
+  .btn-save{background:#0d1b3e;color:#f5a623;border:none;border-radius:12px;padding:12px 28px;font-weight:800;font-size:0.92rem;cursor:pointer;transition:all 0.2s;width:100%;}
+  .btn-save:hover{background:#f5a623;color:#0d1b3e;}
+  .btn-secondary{background:transparent;color:#0d1b3e;border:2px solid #dee2e6;border-radius:12px;padding:10px 20px;font-weight:700;font-size:0.88rem;text-decoration:none;display:inline-block;}
+  .addr-card{background:#f8f9fa;border-radius:12px;padding:16px;margin-bottom:10px;border:1px solid #e0e7ff;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .btn-del-addr{background:#dc3545;color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:0.78rem;font-weight:700;cursor:pointer;flex-shrink:0;}
+</style>
+{% endblock %}
+{% block content %}
+<div class="profile-header">
+  <div class="container">
+    <h1 style="font-weight:800;"><i class="bi bi-person-circle me-2" style="color:#f5a623;"></i>My Profile</h1>
+    <p class="mb-0 text-white-50">Manage your account details</p>
+  </div>
+</div>
+<div class="container py-4">
+  <div class="row g-4">
+    <!-- Profile Info -->
+    <div class="col-md-6">
+      <div class="form-card">
+        <h5><i class="bi bi-person me-2"></i>Personal Information</h5>
+        <form method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="profile">
+          <div class="mb-3"><label class="form-label">Full Name *</label>
+            <input type="text" name="name" class="form-control" value="{{ customer.name }}" required></div>
+          <div class="mb-3"><label class="form-label">Phone</label>
+            <input type="tel" name="phone" class="form-control" value="{{ customer.phone }}" placeholder="+91 XXXXX XXXXX"></div>
+          <div class="mb-4"><label class="form-label">Email Address</label>
+            <input type="email" class="form-control" value="{{ customer.email }}" disabled>
+            <small class="text-muted" style="font-size:0.75rem;">Email cannot be changed. Contact support if needed.</small></div>
+          <button type="submit" class="btn-save"><i class="bi bi-check-circle-fill me-2"></i>Save Changes</button>
+        </form>
+        <div class="text-center mt-3">
+          <a href="/accounts/dashboard/customer/" class="btn-secondary"><i class="bi bi-arrow-left me-1"></i>Back to Dashboard</a>
+        </div>
+      </div>
+    </div>
+    <!-- Password Change -->
+    <div class="col-md-6">
+      <!-- ── FACE RECOGNITION ── -->
+      <div class="form-card">
+        <h5><i class="bi bi-camera-fill me-2"></i>Face Recognition Login</h5>
+        {% if customer.face_descriptor %}
+        <div class="alert alert-success" style="font-size:0.85rem;border-radius:10px;">
+          <i class="bi bi-check-circle-fill me-2"></i>
+          <strong>Face registered!</strong> You can use Face Login on the login page.
+        </div>
+        {% else %}
+        <div class="alert alert-info" style="font-size:0.85rem;border-radius:10px;">
+          <i class="bi bi-info-circle-fill me-2"></i>
+          Register your face once to enable one-click login — no password needed!
+        </div>
+        {% endif %}
+
+        <!-- Video preview -->
+        <div id="faceRegWrap" style="display:none;margin-bottom:16px;">
+          <div style="position:relative;width:280px;height:210px;margin:0 auto 12px;border-radius:14px;overflow:hidden;background:#111;border:3px solid #0d1b3e;">
+            <video id="faceRegVideo" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;"></video>
+            <canvas id="faceRegCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;"></canvas>
+          </div>
+          <div id="faceRegStatus" style="text-align:center;font-size:0.82rem;font-weight:600;padding:6px 12px;border-radius:20px;display:inline-block;background:#fff3cd;color:#856404;">
+            Loading models…
+          </div>
+        </div>
+
+        <div id="faceRegActions">
+          <button type="button" id="startFaceRegBtn" onclick="startFaceReg()" class="btn-save" style="background:#198754;">
+            <i class="bi bi-camera me-2"></i>
+            {% if customer.face_descriptor %}Update My Face{% else %}Register My Face{% endif %}
+          </button>
+        </div>
+        <div id="faceRegCapture" style="display:none;margin-top:10px;">
+          <button type="button" onclick="captureFaceReg()" class="btn-save" style="background:#0d1b3e;">
+            <i class="bi bi-camera-fill me-2"></i>Capture Face
+          </button>
+          <button type="button" onclick="stopFaceReg()" class="btn-save" style="background:#dc3545;margin-top:8px;">
+            <i class="bi bi-x-circle me-2"></i>Cancel
+          </button>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h5><i class="bi bi-lock me-2"></i>Change Password</h5>
+        <form method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="password">
+          <div class="mb-3"><label class="form-label">Current Password *</label>
+            <input type="password" name="current_password" class="form-control" required></div>
+          <div class="mb-3"><label class="form-label">New Password *</label>
+            <input type="password" name="new_password" class="form-control" minlength="6" required></div>
+          <div class="mb-4"><label class="form-label">Confirm New Password *</label>
+            <input type="password" name="confirm_password" class="form-control" required></div>
+          <button type="submit" class="btn-save" style="background:#6f42c1;"><i class="bi bi-lock me-2"></i>Change Password</button>
+        </form>
+      </div>
+      <!-- Saved Addresses -->
+      {% if customer %}
+      {% with addrs=customer.addresses.all %}
+      {% if addrs %}
+      <div class="form-card">
+        <h5><i class="bi bi-geo-alt me-2"></i>Saved Addresses ({{ addrs|length }})</h5>
+        {% for addr in addrs %}
+        <div class="addr-card">
+          <div>
+            <div style="font-weight:700;color:#0d1b3e;font-size:0.9rem;">{{ addr.name }}{% if addr.phone %} · {{ addr.phone }}{% endif %}</div>
+            <div style="font-size:0.82rem;color:#666;margin-top:3px;">{{ addr.house }}, {{ addr.city }}, {{ addr.state }} — {{ addr.pincode }}</div>
+          </div>
+          <form method="POST" action="/cart/address/{{ addr.id }}/delete/" onsubmit="return confirm('Delete this address?')">
+            {% csrf_token %}
+            <button type="submit" class="btn-del-addr"><i class="bi bi-trash3"></i></button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% endwith %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script>
+  const MODEL_URL  = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/model';
+  let regStream    = null;
+  let regModLoaded = false;
+
+  function setRegStatus(text, bg, fg) {
+    const el = document.getElementById('faceRegStatus');
+    if (el) { el.textContent = text; el.style.background = bg; el.style.color = fg; }
+  }
+
+  async function startFaceReg() {
+    document.getElementById('faceRegWrap').style.display    = 'block';
+    document.getElementById('startFaceRegBtn').style.display = 'none';
+    document.getElementById('faceRegCapture').style.display  = 'block';
+    try {
+      regStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user', width:280, height:210 } });
+      document.getElementById('faceRegVideo').srcObject = regStream;
+    } catch(e) {
+      setRegStatus('Camera access denied!', '#f8d7da','#842029');
+      return;
+    }
+    if (!regModLoaded) {
+      setRegStatus('Loading models…', '#cfe2ff','#084298');
+      try {
+        await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+        await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+        await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+        regModLoaded = true;
+        setRegStatus('Ready! Position your face and click Capture.', '#d1e7dd','#0f5132');
+      } catch(e) {
+        setRegStatus('Model load failed. Check internet.', '#f8d7da','#842029');
+      }
+    } else {
+      setRegStatus('Ready! Position your face and click Capture.', '#d1e7dd','#0f5132');
+    }
+  }
+
+  function stopFaceReg() {
+    if (regStream) { regStream.getTracks().forEach(t => t.stop()); regStream = null; }
+    document.getElementById('faceRegWrap').style.display    = 'none';
+    document.getElementById('startFaceRegBtn').style.display = 'block';
+    document.getElementById('faceRegCapture').style.display  = 'none';
+    const c = document.getElementById('faceRegCanvas');
+    if (c) c.getContext('2d').clearRect(0,0,c.width,c.height);
+  }
+
+  async function captureFaceReg() {
+    if (!regModLoaded) { setRegStatus('Models still loading…','#fff3cd','#856404'); return; }
+    setRegStatus('Scanning…','#fff3cd','#856404');
+    const video = document.getElementById('faceRegVideo');
+    const det   = await faceapi
+      .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize:224 }))
+      .withFaceLandmarks()
+      .withFaceDescriptor();
+    if (!det) {
+      setRegStatus('No face detected. Look at the camera!','#f8d7da','#842029');
+      return;
+    }
+    const canvas = document.getElementById('faceRegCanvas');
+    const dims   = faceapi.matchDimensions(canvas, video, true);
+    faceapi.draw.drawDetections(canvas, [faceapi.resizeResults(det, dims)]);
+    setRegStatus('Face captured! Saving…','#d1e7dd','#0f5132');
+    const csrf = document.cookie.split('; ').reduce((a,c) => {
+      const [k,v] = c.split('='); return k.trim()==='csrftoken'?v:a;
+    }, '');
+    try {
+      const res  = await fetch('/accounts/face/register/', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-CSRFToken':csrf},
+        body:JSON.stringify({ descriptor: Array.from(det.descriptor) })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setRegStatus('✅ Face registered! You can now use Face Login.','#d1e7dd','#0f5132');
+        stopFaceReg();
+        setTimeout(() => location.reload(), 1500);
+      } else {
+        setRegStatus('❌ ' + (data.error||'Failed to save.'),'#f8d7da','#842029');
+      }
+    } catch(e) {
+      setRegStatus('Network error. Try again.','#f8d7da','#842029');
+    }
+  }
+</script>
+{% endblock %}

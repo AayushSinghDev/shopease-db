@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block title %}Order #{{ order.pk }} Detail — Admin{% endblock %}
+{% block extra_css %}<style>
+  .ap-header{background:linear-gradient(135deg,#0d1b3e,#162447);padding:30px 0;color:#fff}
+  .ap-nav{background:#fff;border-bottom:2px solid #f0f0f0;padding:0}
+  .ap-nav a{color:#555;font-weight:600;padding:14px 18px;font-size:.88rem;border-bottom:3px solid transparent;display:inline-block;text-decoration:none}
+  .ap-nav a:hover{color:#0d1b3e}.ap-nav a.active{color:#0d1b3e;border-bottom-color:#f5a623}
+  .detail-card{background:#fff;border-radius:16px;padding:24px;box-shadow:0 4px 15px rgba(0,0,0,.07);margin-bottom:18px}
+  .detail-card h5{font-weight:800;color:#0d1b3e;padding-bottom:10px;border-bottom:2px solid #f5a623;display:inline-block;margin-bottom:16px}
+  .info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f5f5f5;font-size:.9rem}
+  .info-row:last-child{border-bottom:none}.info-label{color:#888;font-weight:600}.info-value{color:#0d1b3e;font-weight:700}
+  .tbl{width:100%;border-collapse:collapse;font-size:.88rem}
+  .tbl th{background:#0d1b3e;color:#f5a623;padding:10px 12px;text-align:left;font-weight:700}
+  .tbl td{padding:10px 12px;border-bottom:1px solid #f5f5f5;}
+  .summary-row{display:flex;justify-content:space-between;padding:7px 0;font-size:.9rem;color:#555;border-bottom:1px solid #f5f5f5;}
+  .summary-total{display:flex;justify-content:space-between;font-weight:900;font-size:1.1rem;color:#0d1b3e;padding-top:10px;margin-top:6px;border-top:2px solid #0d1b3e;}
+  .s-pending{background:#fff3cd;color:#856404;padding:5px 14px;border-radius:20px;font-size:.82rem;font-weight:700}
+  .s-confirmed{background:#d1ecf1;color:#0c5460;padding:5px 14px;border-radius:20px;font-size:.82rem;font-weight:700}
+  .s-shipped{background:#e8d4f5;color:#4a235a;padding:5px 14px;border-radius:20px;font-size:.82rem;font-weight:700}
+  .s-delivered{background:#d4edda;color:#155724;padding:5px 14px;border-radius:20px;font-size:.82rem;font-weight:700}
+  .s-cancelled{background:#f8d7da;color:#721c24;padding:5px 14px;border-radius:20px;font-size:.82rem;font-weight:700}
+  .item-img{width:50px;height:50px;border-radius:8px;object-fit:cover;background:#f0f4ff;}
+</style>{% endblock %}
+{% block content %}
+<div class="ap-header"><div class="container">
+  <a href="/admin-panel/orders/" style="color:rgba(255,255,255,0.7);text-decoration:none;font-size:.85rem;"><i class="bi bi-arrow-left me-1"></i>Back to Orders</a>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+    <div>
+      <h1 style="font-weight:800;font-size:1.5rem;">Order #{{ order.pk }}</h1>
+      <p class="mb-0" style="opacity:.7;font-size:.88rem;">{{ order.created_at|date:"d M Y, h:i A" }} &nbsp;·&nbsp; {{ order.customer.name }}</p>
+    </div>
+    <span class="s-{{ order.status }}" style="font-size:.9rem;">{{ order.status|capfirst }}</span>
+  </div>
+</div></div>
+<div class="ap-nav"><div class="container">
+  <a href="/accounts/dashboard/admin/"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+  <a href="/admin-panel/sellers/"><i class="bi bi-shop me-1"></i>Sellers</a>
+  <a href="/admin-panel/customers/"><i class="bi bi-people me-1"></i>Customers</a>
+  <a href="/admin-panel/products/"><i class="bi bi-box-seam me-1"></i>Products</a>
+  <a href="/admin-panel/orders/" class="active"><i class="bi bi-bag-check me-1"></i>Orders</a>
+  <a href="/admin-panel/categories/"><i class="bi bi-grid me-1"></i>Categories</a>
+  <a href="/admin-panel/revenue/"><i class="bi bi-bar-chart me-1"></i>Revenue</a>
+  <a href="/admin-panel/reviews/"><i class="bi bi-star-half me-1"></i>Reviews</a>
+</div></div>
+<div class="container py-4">
+  <div class="row g-3">
+    <div class="col-lg-7">
+      <div class="detail-card">
+        <h5><i class="bi bi-bag me-2"></i>Ordered Items</h5>
+        <table class="tbl">
+          <thead><tr><th>Image</th><th>Product</th><th>Qty</th><th>Unit Price</th><th>Subtotal</th></tr></thead>
+          <tbody>
+            {% for item in items %}
+            <tr>
+              <td>{% if item.product and item.product.image_url %}<img src="{{ item.product.image_url }}" class="item-img">{% else %}<div class="item-img d-flex align-items-center justify-content-center"><i class="bi bi-box-seam" style="color:#ccc;"></i></div>{% endif %}</td>
+              <td style="font-weight:600;">
+                <div>{{ item.product_name }}</div>
+                {% if item.product %}<a href="/admin-panel/products/{{ item.product.id }}/" style="color:#f5a623;font-size:.78rem;text-decoration:none;">View product →</a>{% endif %}
+              </td>
+              <td>{{ item.quantity }}</td>
+              <td>₹{{ item.product_price }}</td>
+              <td style="font-weight:800;">₹{{ item.subtotal }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <!-- Price breakdown -->
+        <div style="margin-top:16px;">
+          <div class="summary-row"><span>Subtotal</span><span>₹{{ order.subtotal }}</span></div>
+          {% if order.discount_amount and order.discount_amount > 0 %}<div class="summary-row" style="color:#28a745;"><span>Discount {% if order.discount_code %}({{ order.discount_code }}){% endif %}</span><span>- ₹{{ order.discount_amount }}</span></div>{% endif %}
+          <div class="summary-row"><span>GST (5%)</span><span>₹{{ order.tax }}</span></div>
+          <div class="summary-row"><span>Shipping</span><span>{% if order.shipping == 0 %}FREE{% else %}₹{{ order.shipping }}{% endif %}</span></div>
+        </div>
+        <div class="summary-total"><span>TOTAL</span><span>₹{{ order.total }}</span></div>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="detail-card">
+        <h5><i class="bi bi-person me-2"></i>Customer</h5>
+        <div class="info-row"><span class="info-label">Name</span><span class="info-value"><a href="/admin-panel/customers/{{ order.customer.id }}/" style="color:#0d1b3e;">{{ order.customer.name }}</a></span></div>
+        <div class="info-row"><span class="info-label">Email</span><span class="info-value">{{ order.customer.email }}</span></div>
+        <div class="info-row"><span class="info-label">Phone</span><span class="info-value">{{ order.customer.phone }}</span></div>
+      </div>
+      {% if order.address %}
+      <div class="detail-card">
+        <h5><i class="bi bi-geo-alt me-2"></i>Delivery Address</h5>
+        <div style="background:#f8f9fa;border-radius:10px;padding:14px;font-size:.88rem;color:#444;line-height:1.8;">
+          <strong>{{ order.address.name }}</strong><br>
+          {% if order.address.phone %}{{ order.address.phone }}<br>{% endif %}
+          {{ order.address.house }}<br>
+          {{ order.address.city }}, {{ order.address.state }} — {{ order.address.pincode }}<br>India
+        </div>
+      </div>
+      {% endif %}
+      <div class="detail-card">
+        <h5><i class="bi bi-gear me-2"></i>Update Status</h5>
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <span>Current:</span><span class="s-{{ order.status }}">{{ order.status|capfirst }}</span>
+        </div>
+        <form method="POST">
+          {% csrf_token %}
+          <select name="status" class="form-select mb-3" style="border-radius:10px;border:1.5px solid #dee2e6;padding:10px;">
+            <option value="pending"   {% if order.status == 'pending'   %}selected{% endif %}>Pending</option>
+            <option value="confirmed" {% if order.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+            <option value="shipped"   {% if order.status == 'shipped'   %}selected{% endif %}>Shipped</option>
+            <option value="delivered" {% if order.status == 'delivered' %}selected{% endif %}>Delivered</option>
+            <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+          </select>
+          <button type="submit" style="background:#f5a623;color:#0d1b3e;border:none;border-radius:10px;padding:11px 24px;font-weight:800;width:100%;font-size:.9rem;cursor:pointer;">
+            <i class="bi bi-check-circle-fill me-2"></i>Update Status
+          </button>
+        </form>
+        <div style="margin-top:10px;border-radius:10px;padding:10px;font-size:.82rem;color:#555;">
+          {% if order.payment_method == 'razorpay' %}
+          <div style="background:#e3f2fd;color:#1565c0;border-radius:8px;padding:8px 12px;font-weight:700;"><i class="bi bi-shield-lock-fill me-1"></i> Paid Online — Razorpay</div>
+          {% else %}
+          <div style="background:#e8f5e9;color:#2e7d32;border-radius:8px;padding:8px 12px;font-weight:700;"><i class="bi bi-cash-coin me-1"></i> Cash on Delivery</div>
+          {% endif %}
+          {% if order.payment_id %}<div style="margin-top:6px;color:#888;">Payment ID: {{ order.payment_id }}</div>{% endif %}
+          {% if order.razorpay_order_id %}<div style="color:#888;">Razorpay Order: {{ order.razorpay_order_id }}</div>{% endif %}
+          <div style="margin-top:4px;">Payment Status: <strong>{{ order.payment_status|capfirst }}</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

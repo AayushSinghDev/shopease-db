@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+{% block title %}Order #{{ order.pk }} — ShopEase{% endblock %}
+{% block extra_css %}
+<style>
+  .detail-header { background: linear-gradient(135deg, #0d1b3e, #162447); padding: 40px 0; color: #fff; }
+  .detail-header h1 { font-weight: 800; }
+  .info-card { background: #fff; border-radius: 16px; padding: 28px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.07); }
+  .info-card h5 { font-weight: 700; color: #0d1b3e; border-bottom: 2px solid #f5a623; padding-bottom: 8px; display: inline-block; margin-bottom: 18px; }
+  .order-item-row { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
+  .order-item-row:last-child { border-bottom: none; }
+  .item-img { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; background: #f0f4ff; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+  .summary-row { display: flex; justify-content: space-between; padding: 7px 0; font-size: 0.9rem; color: #555; border-bottom: 1px solid #f5f5f5; }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-total { display: flex; justify-content: space-between; font-weight: 800; font-size: 1.2rem; color: #0d1b3e; padding-top: 12px; border-top: 2px solid #0d1b3e; margin-top: 8px; }
+  .addr-block { background: #f8f9fa; border-radius: 10px; padding: 14px 16px; font-size: 0.9rem; color: #444; }
+  .s-pending   { background: #fff3cd; color: #856404; padding: 5px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; }
+  .s-confirmed { background: #d1ecf1; color: #0c5460; padding: 5px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; }
+  .s-shipped   { background: #e8d4f5; color: #4a235a; padding: 5px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; }
+  .s-delivered { background: #d4edda; color: #155724; padding: 5px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; }
+  .s-cancelled { background: #f8d7da; color: #721c24; padding: 5px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; }
+  .btn-print { background: #0d1b3e; color: #f5a623; border: none; border-radius: 10px; padding: 10px 22px; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
+  .btn-print:hover { background: #f5a623; color: #0d1b3e; }
+
+  /* ── PRINT STYLES ── */
+  @media print {
+    body * { visibility: hidden !important; }
+    #printSlip, #printSlip * { visibility: visible !important; }
+    #printSlip { position: fixed; left: 0; top: 0; width: 100%; background: #fff; padding: 20px; }
+    .no-print { display: none !important; }
+  }
+
+  /* Print Slip Styles */
+  #printSlip { display: none; }
+  .slip-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid #0d1b3e; }
+  .slip-brand { font-size: 1.5rem; font-weight: 900; color: #0d1b3e; }
+  .slip-brand span { color: #f5a623; }
+  .slip-title { font-size: 1rem; font-weight: 800; color: #0d1b3e; margin-bottom: 4px; }
+  .slip-meta { font-size: 0.8rem; color: #888; }
+  .slip-section { margin-bottom: 16px; }
+  .slip-section-title { font-size: 0.75rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .slip-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  .slip-table th { background: #0d1b3e; color: #f5a623; padding: 8px 12px; text-align: left; font-weight: 700; }
+  .slip-table td { padding: 8px 12px; border-bottom: 1px solid #f0f0f0; color: #333; }
+  .slip-table tr:last-child td { border-bottom: none; }
+  .slip-totals { margin-top: 12px; border-top: 2px solid #0d1b3e; padding-top: 10px; }
+  .slip-total-row { display: flex; justify-content: space-between; font-size: 0.88rem; color: #555; margin-bottom: 4px; }
+  .slip-grand-total { display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 900; color: #0d1b3e; margin-top: 8px; padding-top: 8px; border-top: 1px solid #ddd; }
+  .slip-footer { margin-top: 20px; padding-top: 14px; border-top: 1px solid #eee; text-align: center; font-size: 0.78rem; color: #aaa; }
+  .slip-addr { font-size: 0.88rem; color: #444; line-height: 1.6; }
+  .slip-status { display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="detail-header">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div>
+        <h1><i class="bi bi-receipt me-2"></i>Order #{{ order.pk }}</h1>
+        <p class="mb-0 text-white-50">Placed on {{ order.created_at|date:"d M Y, h:i A" }}</p>
+      </div>
+      {% if order.status != "cancelled" %}<button class="btn-print no-print" onclick="printOrderSlip()"><i class="bi bi-printer-fill"></i> Print Order Slip</button>{% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="container py-4">
+  <div class="row g-4">
+    <div class="col-lg-7">
+
+      <!-- Items -->
+      <div class="info-card">
+        <h5><i class="bi bi-bag-fill me-2"></i>Items</h5>
+        {% for item in items %}
+        <div class="order-item-row">
+          <div class="item-img">
+            {% if item.product and item.product.image_url %}
+              <img src="{{ item.product.image_url }}" alt="{{ item.product_name }}" style="width:100%;height:100%;object-fit:cover">
+            {% else %}
+              <i class="bi bi-box-seam" style="font-size:1.5rem;color:#c0cce0"></i>
+            {% endif %}
+          </div>
+          <div style="flex:1">
+            <div style="font-weight:700;color:#0d1b3e">{{ item.product_name }}</div>
+            <div style="font-size:0.85rem;color:#888">Qty: {{ item.quantity }} · ₹{{ item.product_price }} each</div>
+          </div>
+          <div style="font-weight:800;color:#0d1b3e">₹{{ item.subtotal }}</div>
+        </div>
+        {% endfor %}
+
+        <!-- Price Summary -->
+        <div style="margin-top:16px">
+          <div class="summary-row"><span>Subtotal</span><span>₹{{ order.subtotal }}</span></div>
+          {% if order.discount_amount %}<div class="summary-row" style="color:#28a745"><span>Discount ({{ order.discount_code }})</span><span>- ₹{{ order.discount_amount }}</span></div>{% endif %}
+          <div class="summary-row"><span>GST (5%)</span><span>₹{{ order.tax }}</span></div>
+          <div class="summary-row"><span>Shipping</span><span>{% if order.shipping == 0 %}<span class="text-success fw-bold">FREE</span>{% else %}₹{{ order.shipping }}{% endif %}</span></div>
+        </div>
+        <div class="summary-total"><span>Total</span><span>₹{{ order.total }}</span></div>
+      </div>
+
+    </div>
+
+    <div class="col-lg-5">
+
+      <!-- Status -->
+      <div class="info-card">
+        <h5><i class="bi bi-info-circle-fill me-2"></i>Order Status</h5>
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+          <span class="s-{{ order.status }}">{{ order.status|capfirst }}</span>
+          {% if order.payment_method == "razorpay" %}
+          <span style="background:#e3f2fd;color:#1565c0;border-radius:8px;padding:5px 14px;font-size:0.82rem;font-weight:700;"><i class="bi bi-shield-lock-fill me-1"></i>Paid Online — Razorpay</span>
+          {% else %}
+          <span style="background:#e8f5e9;color:#2e7d32;border-radius:8px;padding:5px 14px;font-size:0.82rem;font-weight:700;"><i class="bi bi-cash-coin me-1"></i>Cash on Delivery</span>
+          {% endif %}
+        </div>
+        {% if order.payment_id %}
+        <div style="font-size:0.8rem;color:#888;margin-top:8px;">Payment ID: {{ order.payment_id }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Address -->
+      {% if order.address %}
+      <div class="info-card">
+        <h5><i class="bi bi-geo-alt-fill me-2"></i>Delivery Address</h5>
+        <div class="addr-block">
+          <strong>{{ order.address.name }}</strong>
+          {% if order.address.phone %}<br>{{ order.address.phone }}{% endif %}
+          <br>{{ order.address.house }}
+          <br>{{ order.address.city }}, {{ order.address.state }} — {{ order.address.pincode }}
+          <br>India
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="d-flex gap-2 flex-wrap no-print">
+        <a href="/cart/my-orders/" class="btn btn-dark" style="border-radius:10px;font-weight:700">
+          <i class="bi bi-arrow-left me-1"></i>All Orders
+        </a>
+        <a href="/products/" class="btn btn-outline-secondary" style="border-radius:10px;font-weight:700">
+          <i class="bi bi-shop me-1"></i>Shop More
+        </a>
+        {% if order.status != "cancelled" %}<button class="btn-print" onclick="printOrderSlip()"><i class="bi bi-printer-fill"></i> Print</button>{% endif %}
+        {% if order.status == 'pending' or order.status == 'confirmed' %}
+        <form action="/cart/my-orders/{{ order.pk }}/cancel/" method="POST" onsubmit="return confirm('Cancel this order?')">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="border-radius:10px;font-weight:700;">
+            <i class="bi bi-x-circle me-1"></i>Cancel Order
+          </button>
+        </form>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── HIDDEN PRINT SLIP ── -->
+<div id="printSlip">
+  <div class="slip-header">
+    <div>
+      <div class="slip-brand">Shop<span>Ease</span></div>
+      <div style="font-size:0.78rem;color:#888;margin-top:2px;">support@shopease.com · +91 96879 07055</div>
+    </div>
+    <div style="text-align:right">
+      <div class="slip-title">Order Invoice</div>
+      <div class="slip-meta">Order #{{ order.pk }}</div>
+      <div class="slip-meta">Date: {{ order.created_at|date:"d M Y, h:i A" }}</div>
+      <div class="slip-meta" style="margin-top:4px;">
+        <span class="slip-status" style="background:#f5a623;color:#0d1b3e;">{{ order.status|upper }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer + Delivery -->
+  <div style="display:flex;gap:30px;margin-bottom:16px;">
+    <div style="flex:1">
+      <div class="slip-section-title">Bill To</div>
+      <div class="slip-addr">
+        <strong>{{ order.address.name|default:order.customer.name }}</strong><br>
+        {% if order.address.phone %}{{ order.address.phone }}<br>{% endif %}
+        {{ order.customer.email }}
+      </div>
+    </div>
+    {% if order.address %}
+    <div style="flex:1">
+      <div class="slip-section-title">Ship To</div>
+      <div class="slip-addr">
+        {{ order.address.house }}<br>
+        {{ order.address.city }}, {{ order.address.state }}<br>
+        PIN: {{ order.address.pincode }}, India
+      </div>
+    </div>
+    {% endif %}
+    <div style="flex:1">
+      <div class="slip-section-title">Payment</div>
+      <div class="slip-addr">
+        Method: {{ order.payment_method|upper }}<br>
+        Status: Paid<br>
+        {% if order.payment_id %}ID: {{ order.payment_id }}{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Items Table -->
+  <div class="slip-section">
+    <div class="slip-section-title">Items Ordered</div>
+    <table class="slip-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Product</th>
+          <th style="text-align:center">Qty</th>
+          <th style="text-align:right">Unit Price</th>
+          <th style="text-align:right">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ item.product_name }}</td>
+          <td style="text-align:center">{{ item.quantity }}</td>
+          <td style="text-align:right">₹{{ item.product_price }}</td>
+          <td style="text-align:right">₹{{ item.subtotal }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- Totals -->
+    <div class="slip-totals">
+      <div class="slip-total-row"><span>Subtotal</span><span>₹{{ order.subtotal }}</span></div>
+      {% if order.discount_amount and order.discount_amount > 0 %}
+      <div class="slip-total-row" style="color:#28a745"><span>Discount {% if order.discount_code %}({{ order.discount_code }}){% endif %}</span><span>- ₹{{ order.discount_amount }}</span></div>
+      {% endif %}
+      <div class="slip-total-row"><span>GST (5%)</span><span>₹{{ order.tax }}</span></div>
+      <div class="slip-total-row"><span>Shipping</span><span>{% if order.shipping == 0 %}FREE{% else %}₹{{ order.shipping }}{% endif %}</span></div>
+      <div class="slip-grand-total"><span>TOTAL AMOUNT</span><span>₹{{ order.total }}</span></div>
+    </div>
+  </div>
+
+  <div class="slip-footer">
+    Thank you for shopping with ShopEase! · This is a computer-generated invoice · shopease.com
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function printOrderSlip() {
+  var slip = document.getElementById('printSlip');
+  slip.style.display = 'block';
+  window.print();
+  slip.style.display = 'none';
+}
+</script>
+{% endblock %}

@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- ── SEO Meta Tags ── -->
+    <title>{% block title %}ShopEase — India's Trusted Online Shopping Destination{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}ShopEase offers quality products at great prices with fast delivery across India. Shop electronics, fashion, home goods and more. Free shipping above ₹499.{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}online shopping india, buy products online, shopease, ecommerce india, free delivery{% endblock %}">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="ShopEase">
+    <link rel="canonical" href="{% block canonical %}https://shopease.in{{ request.path }}{% endblock %}">
+
+    <!-- ── Open Graph (Facebook/WhatsApp) ── -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="ShopEase">
+    <meta property="og:title" content="{% block og_title %}ShopEase — India's Trusted Online Store{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Quality products at great prices. Free shipping above ₹499. Shop now!{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}https://shopease.in/static/og-image.png{% endblock %}">
+    <meta property="og:url" content="https://shopease.in{{ request.path }}">
+
+    <!-- ── Twitter Card ── -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}ShopEase — Online Shopping{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}Shop quality products at great prices. Free shipping above ₹499!{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}https://shopease.in/static/og-image.png{% endblock %}">
+
+    <!-- ── Schema.org JSON-LD ── -->
+    {% block schema_org %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "ShopEase",
+      "url": "https://shopease.in",
+      "description": "India's trusted online shopping destination",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://shopease.in/products/?search={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    {% endblock %}
+
+    <!-- ── Favicon ── -->
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon">
+
+    <!-- ── Page Loader ── -->
+    <style>
+      #page-loader{position:fixed;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,#f5a623,#e09415);z-index:99999;transform:scaleX(0);transform-origin:left;transition:transform .3s ease}
+      #page-loader.loading{transform:scaleX(.7)}
+      #page-loader.done{transform:scaleX(1);opacity:0;transition:transform .2s ease,opacity .3s ease .2s}
+    </style>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"/>
+
+    <style>
+      :root {
+        --navy: #0d1b3e;
+        --navy-light: #162447;
+        --orange: #f5a623;
+        --orange-hover: #e09415;
+      }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f8f9fa;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* ── NAVBAR ── */
+      .navbar-shopease {
+        background: var(--navy);
+        padding: 12px 0;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+      }
+
+      .navbar-brand-custom {
+        font-size: 1.7rem;
+        font-weight: 900;
+        color: var(--orange) !important;
+        text-decoration: none;
+        letter-spacing: 1px;
+        white-space: nowrap;
+      }
+      .navbar-brand-custom span { color: #fff; }
+
+      .search-bar { flex: 1; max-width: 480px; margin: 0 16px; }
+      .search-bar .form-control {
+        border: none;
+        border-radius: 8px 0 0 8px;
+        padding: 10px 16px;
+        font-size: 0.9rem;
+      }
+      .search-bar .btn-search {
+        background: var(--orange);
+        border: none;
+        border-radius: 0 8px 8px 0;
+        padding: 10px 18px;
+        color: var(--navy);
+        font-weight: 700;
+      }
+      .search-bar .btn-search:hover { background: var(--orange-hover); }
+
+      .nav-icons { display: flex; align-items: center; gap: 10px; flex-wrap: nowrap; }
+
+      .cart-btn {
+        background: var(--orange);
+        color: var(--navy) !important;
+        border-radius: 8px;
+        padding: 8px 14px;
+        font-weight: 700;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+        white-space: nowrap;
+      }
+      .cart-btn:hover { background: var(--orange-hover); transform: translateY(-1px); }
+
+      .cart-count {
+        background: #fff;
+        color: var(--navy);
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 900;
+      }
+
+      .btn-nav-login {
+        background: transparent;
+        border: 2px solid var(--orange);
+        color: var(--orange) !important;
+        border-radius: 8px;
+        padding: 7px 16px;
+        font-weight: 700;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+        white-space: nowrap;
+      }
+      .btn-nav-login:hover { background: var(--orange); color: var(--navy) !important; }
+
+      .btn-nav-logout {
+        background: transparent;
+        border: 2px solid #dc3545;
+        color: #ff6b6b !important;
+        border-radius: 8px;
+        padding: 7px 14px;
+        font-weight: 700;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+        white-space: nowrap;
+      }
+      .btn-nav-logout:hover { background: #dc3545; color: #fff !important; }
+
+      .user-greeting { color: rgba(255,255,255,0.8); font-size: 0.85rem; white-space: nowrap; }
+
+      /* ── CUSTOMER DROPDOWN ── */
+      #customerDropdownWrapper { position: relative; display: inline-block; }
+
+      .customer-trigger {
+        text-decoration: none;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+        padding: 6px 10px;
+        border-radius: 8px;
+        transition: background 0.2s;
+      }
+      .customer-trigger:hover { background: rgba(255,255,255,0.1); 
+      color:white;}
+
+      #customerMenu {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: calc(100% + 8px);
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+        min-width: 185px;
+        z-index: 9999;
+        overflow: hidden;
+        animation: fadeDown 0.15s ease;
+      }
+      @keyframes fadeDown { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+
+      .customer-menu-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 16px;
+        color: #0d1b3e;
+        text-decoration: none;
+        font-size: 0.88rem;
+        font-weight: 600;
+        transition: background 0.15s;
+      }
+      .customer-menu-link:hover { background: #f0f4ff; }
+      .customer-menu-link.danger { color: #dc3545; }
+      .customer-menu-link.danger:hover { background: #fff5f5; }
+      .menu-divider { height: 1px; background: #f0f0f0; margin: 0 16px; }
+
+      /* ── MOBILE HAMBURGER ── */
+      .hamburger-btn {
+        display: none;
+        background: none;
+        border: none;
+        color: var(--orange);
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 4px 8px;
+      }
+      .mobile-search { display: none; padding: 10px 0; }
+
+      @media (max-width: 768px) {
+        .search-bar { display: none !important; }
+        .hamburger-btn { display: flex; }
+        .mobile-search { display: block; }
+        .mobile-search .form-control { border-radius: 8px 0 0 8px; border: none; }
+        .mobile-search .btn-search { border-radius: 0 8px 8px 0; background: var(--orange); border: none; color: var(--navy); font-weight: 700; padding: 10px 14px; }
+        .navbar-brand-custom { font-size: 1.3rem; }
+      }
+      @media (max-width: 480px) {
+        .btn-nav-login span, .btn-nav-logout span { display: none; }
+        .cart-btn span.label { display: none; }
+      }
+
+      /* ── FOOTER ── */
+      .footer {
+        background: var(--navy);
+        color: rgba(255,255,255,0.8);
+        padding: 50px 0 20px;
+        margin-top: auto;
+      }
+      .footer h5 { color: var(--orange); font-weight: 700; margin-bottom: 18px; }
+      .footer a {
+        color: rgba(255,255,255,0.7);
+        text-decoration: none;
+        display: block;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        transition: color 0.2s;
+      }
+      .footer a:hover { color: var(--orange); }
+      .footer-bottom {
+        border-top: 1px solid rgba(255,255,255,0.1);
+        margin-top: 30px;
+        padding-top: 20px;
+        text-align: center;
+        font-size: 0.85rem;
+        color: rgba(255,255,255,0.5);
+      }
+      .footer-brand { font-size: 1.5rem; font-weight: 900; color: var(--orange); }
+
+      /* ── MESSAGES ── */
+      .messages-container {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        z-index: 9999;
+        width: 340px;
+      }
+      .alert {
+        border-radius: 12px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        border: none;
+        padding: 14px 18px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        font-size: 0.88rem;
+        font-weight: 500;
+        animation: slideInRight 0.3s ease;
+      }
+      @keyframes slideInRight { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
+      .alert-success  { background:#d4edda; color:#155724; border-left:4px solid #28a745; }
+      .alert-error,
+      .alert-danger   { background:#f8d7da; color:#721c24; border-left:4px solid #dc3545; }
+      .alert-warning  { background:#fff3cd; color:#856404; border-left:4px solid #f5a623; }
+      .alert-info     { background:#d1ecf1; color:#0c5460; border-left:4px solid #17a2b8; }
+      .alert .btn-close { margin-left:auto; padding:0; background:none; border:none; cursor:pointer; opacity:0.5; font-size:1rem; }
+      .alert .btn-close:hover { opacity:1; }
+
+      main { flex: 1; }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body>
+
+    <!-- ── NAVBAR ── -->
+    <nav class="navbar-shopease" role="navigation" aria-label="Main navigation">
+      <div class="container">
+        <div class="d-flex align-items-center w-100">
+
+          <!-- Logo -->
+          <a href="/" class="navbar-brand-custom me-2" aria-label="ShopEase Home">
+            <i class="bi bi-bag-heart-fill" aria-hidden="true"></i> Shop<span>Ease</span>
+          </a>
+
+          <!-- Desktop Search -->
+          <form class="search-bar d-flex" action="/products/" method="GET" role="search" aria-label="Product search">
+            <label for="nav-search" class="visually-hidden">Search products</label>
+            <input type="text" id="nav-search" name="search" class="form-control"
+              placeholder="Search products..."
+              value="{{ request.GET.search }}"
+              aria-label="Search products"/>
+            <button type="submit" class="btn-search" aria-label="Search">
+              <i class="bi bi-search" aria-hidden="true"></i>
+            </button>
+          </form>
+
+          <!-- Nav Icons -->
+          <div class="nav-icons ms-auto">
+
+            {% if request.session.user_id %}
+
+              {% if request.session.user_role == 'customer' %}
+                <!-- Cart -->
+                <a href="/cart/" class="cart-btn" aria-label="Shopping cart, {{ cart_qty|default:0 }} items">
+                  <i class="bi bi-cart3" aria-hidden="true"></i>
+                  <span class="label">Cart</span>
+                  <span class="cart-count" aria-live="polite">{{ cart_qty|default:0 }}</span>
+                </a>
+
+                <!-- Customer Dropdown -->
+                <div id="customerDropdownWrapper">
+                  <button class="customer-trigger" id="customerTrigger"
+                    aria-haspopup="true" aria-expanded="false" aria-controls="customerMenu">
+                    <i class="bi bi-person-circle" aria-hidden="true"></i>
+                    <span class="d-none d-md-inline">{{ request.session.user_name }}</span>
+                    <i class="bi bi-chevron-down" style="font-size:0.65rem;" aria-hidden="true"></i>
+                  </button>
+                  <div id="customerMenu" role="menu" aria-labelledby="customerTrigger">
+                    <a href="/accounts/dashboard/customer/" class="customer-menu-link" role="menuitem">
+                      <i class="bi bi-speedometer2" style="color:#f5a623;" aria-hidden="true"></i> My Dashboard
+                    </a>
+                    <a href="/cart/my-orders/" class="customer-menu-link" role="menuitem">
+                      <i class="bi bi-bag-check" style="color:#28a745;" aria-hidden="true"></i> My Orders
+                    </a>
+                    <a href="/products/wishlist/" class="customer-menu-link" role="menuitem">
+                      <i class="bi bi-heart-fill" style="color:#dc3545;" aria-hidden="true"></i> Wishlist
+                    </a>
+                    <a href="/accounts/profile/" class="customer-menu-link" role="menuitem">
+                      <i class="bi bi-pencil-fill" style="color:#6f42c1;" aria-hidden="true"></i> Edit Profile
+                    </a>
+                    <div class="menu-divider" role="separator"></div>
+                    <a href="/accounts/logout/" class="customer-menu-link danger" role="menuitem">
+                      <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Logout
+                    </a>
+                  </div>
+                </div>
+
+              {% elif request.session.user_role == 'seller' %}
+                <a href="/seller/dashboard/" style="color:rgba(255,255,255,0.85);text-decoration:none;font-size:0.85rem;display:flex;align-items:center;gap:6px;background:rgba(245,166,35,0.15);padding:7px 14px;border-radius:8px;border:1px solid rgba(245,166,35,0.4);">
+                  <i class="bi bi-shop" style="color:#f5a623;" aria-hidden="true"></i>
+                  <span class="d-none d-sm-inline">Seller Panel</span>
+                </a>
+                <span class="user-greeting d-none d-md-flex align-items-center gap-1">
+                  <i class="bi bi-person-circle" aria-hidden="true"></i> {{ request.session.user_name }}
+                </span>
+                <a href="/accounts/logout/" class="btn-nav-logout">
+                  <i class="bi bi-box-arrow-right" aria-hidden="true"></i> <span>Logout</span>
+                </a>
+
+              {% elif request.session.user_role == 'admin' %}
+                <a href="/accounts/dashboard/admin/" style="color:rgba(255,255,255,0.85);text-decoration:none;font-size:0.85rem;display:flex;align-items:center;gap:6px;background:rgba(220,53,69,0.15);padding:7px 14px;border-radius:8px;border:1px solid rgba(220,53,69,0.4);">
+                  <i class="bi bi-shield-fill-check" style="color:#ff6b6b;" aria-hidden="true"></i>
+                  <span class="d-none d-sm-inline">Admin Dashboard</span>
+                </a>
+                <span class="user-greeting d-none d-md-flex align-items-center gap-1">
+                  <i class="bi bi-person-circle" aria-hidden="true"></i> {{ request.session.user_name }}
+                </span>
+                <a href="/accounts/logout/" class="btn-nav-logout">
+                  <i class="bi bi-box-arrow-right" aria-hidden="true"></i> <span>Logout</span>
+                </a>
+              {% endif %}
+
+            {% else %}
+              <!-- Guest -->
+              <a href="/cart/" class="cart-btn" aria-label="Shopping cart, {{ cart_qty|default:0 }} items">
+                <i class="bi bi-cart3" aria-hidden="true"></i>
+                <span class="label">Cart</span>
+                <span class="cart-count">{{ cart_qty|default:0 }}</span>
+              </a>
+              <a href="/accounts/login/" class="btn-nav-login">
+                <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> <span>Login</span>
+              </a>
+            {% endif %}
+
+          </div><!-- /nav-icons -->
+
+          <!-- Mobile Hamburger -->
+          <button class="hamburger-btn ms-2" id="mobileSearchToggle" title="Search" aria-label="Toggle search">
+            <i class="bi bi-search" aria-hidden="true"></i>
+          </button>
+
+        </div><!-- /d-flex -->
+
+        <!-- Mobile Search Bar -->
+        <div class="mobile-search" id="mobileSearchBar" style="display:none;">
+          <form class="d-flex" action="/products/" method="GET" role="search">
+            <label for="mobile-search" class="visually-hidden">Search products</label>
+            <input type="text" id="mobile-search" name="search" class="form-control"
+              placeholder="Search products..."
+              value="{{ request.GET.search }}"/>
+            <button type="submit" class="btn-search" aria-label="Search">
+              <i class="bi bi-search" aria-hidden="true"></i>
+            </button>
+          </form>
+        </div>
+
+      </div><!-- /container -->
+    </nav>
+
+    <!-- ── MESSAGES ── -->
+    <div class="messages-container" aria-live="polite" aria-label="Notifications">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- ── MAIN CONTENT ── -->
+    <main id="main-content">{% block content %}{% endblock %}</main>
+
+    <!-- ── FOOTER ── -->
+    {% if request.session.user_role != 'admin' and request.session.user_role != 'seller' %}
+    <footer class="footer" role="contentinfo">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-4 mb-4">
+            <div class="footer-brand"><i class="bi bi-bag-heart-fill" aria-hidden="true"></i> ShopEase</div>
+            <p class="mt-3 text-white-50" style="font-size:0.9rem;">
+              Your one-stop e-commerce destination. Quality products, great prices, fast delivery across India.
+            </p>
+            <!-- Breadcrumb / Schema for SEO -->
+            <div style="margin-top:16px;">
+              <a href="/products/" style="color:rgba(255,255,255,0.5);font-size:0.8rem;margin-right:12px;">Shop</a>
+              <a href="/accounts/register/" style="color:rgba(255,255,255,0.5);font-size:0.8rem;margin-right:12px;">Sell</a>
+              <a href="/accounts/login/" style="color:rgba(255,255,255,0.5);font-size:0.8rem;">Login</a>
+            </div>
+          </div>
+
+          <div class="col-md-2 mb-4">
+            <h5>Shop</h5>
+            <a href="/products/">All Products</a>
+            <a href="/">Categories</a>
+            <a href="/products/?sort=newest">New Arrivals</a>
+            <a href="/products/?sort=price_low">Best Prices</a>
+          </div>
+
+          <div class="col-md-2 mb-4">
+            <h5>Account</h5>
+            {% if not request.session.user_id %}
+              <a href="/accounts/login/">Login</a>
+              <a href="/accounts/register/">Register</a>
+              <a href="/accounts/register/">Become a Seller</a>
+            {% endif %}
+            {% if request.session.user_role == 'customer' %}
+              <a href="/accounts/dashboard/customer/">My Dashboard</a>
+              <a href="/cart/my-orders/">My Orders</a>
+              <a href="/products/wishlist/">Wishlist</a>
+            {% else %}
+              <a href="/cart/my-orders/">My Orders</a>
+            {% endif %}
+          </div>
+
+          <div class="col-md-4 mb-4">
+            <h5>Contact & Support</h5>
+            <p style="font-size:0.9rem;">
+              <i class="bi bi-envelope me-2" aria-hidden="true"></i>support@shopease.com<br/>
+              <i class="bi bi-telephone me-2" aria-hidden="true"></i>+91 96879 07055<br/>
+              <i class="bi bi-geo-alt me-2" aria-hidden="true"></i>India<br/>
+              <i class="bi bi-clock me-2" aria-hidden="true"></i>Mon–Sat, 9 AM – 6 PM
+            </p>
+            <div style="margin-top:12px;font-size:0.85rem;color:rgba(255,255,255,0.55);">
+              <i class="bi bi-shield-check me-1" aria-hidden="true"></i> Secure Payments
+              &nbsp;|&nbsp;
+              <i class="bi bi-truck me-1" aria-hidden="true"></i> PAN India Delivery
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          © 2026 ShopEase. All rights reserved. Built with ❤️ in India using Django.
+          &nbsp;|&nbsp; <a href="/accounts/login/" style="color:rgba(255,255,255,0.4);">Privacy</a>
+          &nbsp;|&nbsp; <a href="/accounts/login/" style="color:rgba(255,255,255,0.4);">Terms</a>
+        </div>
+      </div>
+    </footer>
+    {% endif %}
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- ── CUSTOM CONFIRM DIALOG ── -->
+    <div id="shopConfirmOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:999990;align-items:center;justify-content:center;" role="dialog" aria-modal="true" aria-labelledby="shopConfirmTitle">
+      <div style="background:#fff;border-radius:16px;padding:32px;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center;">
+        <div style="width:56px;height:56px;background:#fce4ec;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:1.5rem;" aria-hidden="true">⚠️</div>
+        <h5 id="shopConfirmTitle" style="font-weight:800;color:#0d1b3e;margin-bottom:8px;font-size:1.1rem;">Are you sure?</h5>
+        <p id="shopConfirmMsg" style="color:#666;font-size:.9rem;margin-bottom:24px;">This action cannot be undone.</p>
+        <div style="display:flex;gap:12px;justify-content:center;">
+          <button onclick="closeConfirm()" style="background:transparent;border:2px solid #dee2e6;border-radius:10px;padding:10px 24px;font-weight:700;color:#555;cursor:pointer;font-size:.9rem;">Cancel</button>
+          <button id="shopConfirmYes" style="background:#dc3545;color:#fff;border:none;border-radius:10px;padding:10px 24px;font-weight:700;cursor:pointer;font-size:.9rem;">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TOAST ── -->
+    <div id="shopToast" style="display:none;position:fixed;top:80px;right:20px;z-index:999995;background:#0d1b3e;color:#fff;border-radius:12px;padding:14px 20px;box-shadow:0 8px 25px rgba(0,0,0,0.2);font-size:.9rem;font-weight:600;min-width:260px;max-width:360px;align-items:center;gap:10px;" role="alert" aria-live="assertive">
+      <span id="shopToastIcon" aria-hidden="true">✓</span>&nbsp;<span id="shopToastMsg"></span>
+    </div>
+
+    <script>
+    // ── Customer Dropdown ────────────────────────────────────
+    (function() {
+      var trigger = document.getElementById('customerTrigger');
+      var menu    = document.getElementById('customerMenu');
+      if (!trigger || !menu) return;
+      trigger.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var isOpen = menu.style.display === 'block';
+        menu.style.display = isOpen ? 'none' : 'block';
+        trigger.setAttribute('aria-expanded', !isOpen);
+      });
+      document.addEventListener('click', function() {
+        if (menu) { menu.style.display = 'none'; trigger && trigger.setAttribute('aria-expanded', 'false'); }
+      });
+      // Keyboard nav
+      trigger.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') { menu.style.display = 'none'; trigger.setAttribute('aria-expanded','false'); }
+      });
+    })();
+
+    // ── Mobile Search Toggle ─────────────────────────────────
+    (function() {
+      var btn = document.getElementById('mobileSearchToggle');
+      var bar = document.getElementById('mobileSearchBar');
+      if (!btn || !bar) return;
+      btn.addEventListener('click', function() {
+        var isHidden = bar.style.display === 'none';
+        bar.style.display = isHidden ? 'block' : 'none';
+        if (isHidden) bar.querySelector('input').focus();
+      });
+    })();
+
+    // ── Custom Confirm Dialog ────────────────────────────────
+    var _confirmCallback = null;
+    function shopConfirm(msg, callback, title) {
+      document.getElementById('shopConfirmTitle').textContent = title || 'Are you sure?';
+      document.getElementById('shopConfirmMsg').textContent   = msg   || 'This action cannot be undone.';
+      document.getElementById('shopConfirmOverlay').style.display = 'flex';
+      _confirmCallback = callback;
+      document.getElementById('shopConfirmYes').onclick = function() {
+        document.getElementById('shopConfirmOverlay').style.display = 'none';
+        if (_confirmCallback) _confirmCallback();
+        _confirmCallback = null;
+      };
+    }
+    function closeConfirm() {
+      document.getElementById('shopConfirmOverlay').style.display = 'none';
+      _confirmCallback = null;
+    }
+
+    // ── Toast ────────────────────────────────────────────────
+    var _toastTimer = null;
+    function showToast(msg, type) {
+      var t    = document.getElementById('shopToast');
+      var icon = type === 'error' ? '✗' : type === 'warning' ? '⚠' : '✓';
+      var bg   = type === 'error' ? '#dc3545' : type === 'warning' ? '#856404' : '#1a7a4a';
+      document.getElementById('shopToastMsg').textContent  = msg;
+      document.getElementById('shopToastIcon').textContent = icon;
+      t.style.background = bg;
+      t.style.display = 'flex';
+      if (_toastTimer) clearTimeout(_toastTimer);
+      _toastTimer = setTimeout(function() { t.style.display = 'none'; }, 5000);
+    }
+
+    // ── Replace native confirm() with shopConfirm ────────────
+    document.addEventListener('DOMContentLoaded', function() {
+
+      document.querySelectorAll('form[onsubmit]').forEach(function(form) {
+        var original = form.getAttribute('onsubmit') || '';
+        if (original.indexOf('confirm(') === -1) return;
+        var m   = original.match(/confirm\(["'](.+?)["']\)/);
+        var msg = m ? m[1] : 'Are you sure? This action cannot be undone.';
+        form.removeAttribute('onsubmit');
+        form.dataset.shopConfirmed = '';
+        form.addEventListener('submit', function(e) {
+          if (form.dataset.shopConfirmed === 'yes') return;
+          e.preventDefault(); e.stopImmediatePropagation();
+          var f = form;
+          shopConfirm(msg, function() { f.dataset.shopConfirmed = 'yes'; f.submit(); });
+        }, true);
+      });
+
+      document.querySelectorAll('button[onclick], input[type=submit][onclick]').forEach(function(btn) {
+        var oc = btn.getAttribute('onclick') || '';
+        if (oc.indexOf('confirm(') === -1) return;
+        var m   = oc.match(/confirm\(["'](.+?)["']\)/);
+        var msg = m ? m[1] : 'Are you sure?';
+        btn.removeAttribute('onclick');
+        btn.addEventListener('click', function(e) {
+          e.preventDefault(); e.stopImmediatePropagation();
+          var form = btn.closest('form');
+          shopConfirm(msg, function() {
+            if (form) { form.dataset.shopConfirmed = 'yes'; form.submit(); }
+          });
+        }, true);
+      });
+
+      document.querySelectorAll('a[onclick]').forEach(function(link) {
+        var oc = link.getAttribute('onclick') || '';
+        if (oc.indexOf('confirm(') === -1) return;
+        var m    = oc.match(/confirm\(["'](.+?)["']\)/);
+        var msg  = m ? m[1] : 'Are you sure?';
+        var href = link.getAttribute('href') || '#';
+        link.removeAttribute('onclick');
+        link.addEventListener('click', function(e) {
+          e.preventDefault(); e.stopImmediatePropagation();
+          shopConfirm(msg, function() {
+            var f  = document.createElement('form');
+            f.method = 'POST';
+            f.action = href;
+            var csrf = document.cookie.split('; ').reduce(function(acc, c) {
+              var p = c.split('='); return p[0].trim() === 'csrftoken' ? p[1] : acc;
+            }, '');
+            var ci = document.createElement('input');
+            ci.type = 'hidden'; ci.name = 'csrfmiddlewaretoken'; ci.value = csrf;
+            f.appendChild(ci);
+            document.body.appendChild(f);
+            f.submit();
+          });
+        }, true);
+      });
+
+      // Auto-dismiss alerts after 5 seconds
+      document.querySelectorAll('.messages-container .alert').forEach(function(el) {
+        setTimeout(function() {
+          el.classList.remove('show');
+          setTimeout(function() { el.remove(); }, 300);
+        }, 5000);
+      });
+    });
+    </script>
+
+    <!-- ── SHOPEASE AI CHATBOT ── -->
+    <div id="chatWidget" aria-label="ShopEase Assistant">
+      <button id="chatToggle" onclick="toggleChat()" title="ShopEase Assistant" aria-haspopup="true" aria-expanded="false">
+        <i class="bi bi-chat-dots-fill" aria-hidden="true"></i>
+        <span id="chatBadge" style="display:none;" aria-hidden="true">1</span>
+      </button>
+      <div id="chatWindow" style="display:none;flex-direction:column;" role="dialog" aria-label="ShopEase Chat">
+        <div id="chatHeader">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:36px;height:36px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;" aria-hidden="true">
+              <i class="bi bi-robot"></i>
+            </div>
+            <div>
+              <div style="font-weight:700;font-size:0.92rem;">ShopEase Assistant</div>
+              <div style="font-size:0.72rem;opacity:0.8;" aria-live="polite">● Online</div>
+            </div>
+          </div>
+          <button onclick="toggleChat()" style="background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;padding:0;" aria-label="Close chat">
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div id="chatMessages" aria-live="polite" aria-label="Chat messages">
+          <div class="chat-msg bot">
+            <div class="chat-bubble">
+              Hey{% if request.session.user_name %} <strong>{{ request.session.user_name }}</strong>{% endif %}! 👋 I'm your ShopEase Assistant.<br><br>
+              I can help you with orders, products, shipping, discounts &amp; more. What's on your mind? 😊
+            </div>
+          </div>
+        </div>
+        <div id="chatInputArea">
+          <div style="display:flex;gap:8px;align-items:center;">
+            <label for="chatInput" class="visually-hidden">Type your message</label>
+            <input type="text" id="chatInput" placeholder="Type your message..."
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"
+              autocomplete="off" aria-label="Chat message input"/>
+            <button id="chatSendBtn" onclick="sendMessage()" aria-label="Send message">
+              <i class="bi bi-send-fill" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div style="text-align:center;font-size:0.68rem;color:#aaa;margin-top:6px;">Powered by ShopEase AI</div>
+        </div>
+      </div>
+    </div>
+
+    <style>
+    .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    #chatWidget{position:fixed;bottom:24px;right:24px;z-index:99990;font-family:"Segoe UI",sans-serif;}
+    #chatToggle{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#0d1b3e,#1a3a6e);color:#f5a623;border:none;font-size:1.5rem;cursor:pointer;box-shadow:0 4px 20px rgba(13,27,62,0.4);display:flex;align-items:center;justify-content:center;transition:all 0.3s;position:relative;}
+    #chatToggle:hover{transform:scale(1.08);box-shadow:0 6px 25px rgba(13,27,62,0.5);}
+    #chatBadge{position:absolute;top:-3px;right:-3px;background:#dc3545;color:#fff;border-radius:50%;width:18px;height:18px;font-size:0.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;}
+    #chatWindow{position:absolute;bottom:70px;right:0;width:340px;background:#fff;border-radius:18px;box-shadow:0 10px 40px rgba(0,0,0,0.18);overflow:hidden;display:flex;max-height:520px;animation:slideUp 0.25s ease;}
+    @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    #chatHeader{background:linear-gradient(135deg,#0d1b3e,#1a3a6e);color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+    #chatMessages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;background:#f8f9fa;max-height:320px;}
+    .chat-msg{display:flex;}
+    .chat-msg.bot{justify-content:flex-start;}
+    .chat-msg.user{justify-content:flex-end;}
+    .chat-bubble{max-width:82%;padding:10px 14px;border-radius:14px;font-size:0.875rem;line-height:1.5;word-break:break-word;}
+    .chat-msg.bot .chat-bubble{background:#fff;color:#333;border-radius:4px 14px 14px 14px;box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+    .chat-msg.user .chat-bubble{background:linear-gradient(135deg,#0d1b3e,#1a3a6e);color:#fff;border-radius:14px 14px 4px 14px;}
+    .chat-typing .chat-bubble{background:#fff;padding:12px 16px;}
+    .typing-dots{display:flex;gap:4px;align-items:center;}
+    .typing-dots span{width:7px;height:7px;background:#bbb;border-radius:50%;animation:bounce 1.2s infinite;}
+    .typing-dots span:nth-child(2){animation-delay:0.2s;}
+    .typing-dots span:nth-child(3){animation-delay:0.4s;}
+    @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+    #chatInputArea{padding:12px 14px;background:#fff;border-top:1px solid #f0f0f0;flex-shrink:0;}
+    #chatInput{flex:1;border:1.5px solid #e0e7ff;border-radius:10px;padding:9px 13px;font-size:0.875rem;outline:none;width:calc(100% - 46px);transition:border 0.2s;}
+    #chatInput:focus{border-color:#0d1b3e;}
+    #chatSendBtn{width:38px;height:38px;background:#0d1b3e;color:#f5a623;border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;transition:all 0.2s;}
+    #chatSendBtn:hover{background:#f5a623;color:#0d1b3e;}
+    #chatSendBtn:disabled{opacity:0.5;cursor:not-allowed;}
+    @media(max-width:400px){#chatWindow{width:300px;right:-10px;}}
+    </style>
+
+    <script>
+    var chatHistory = [];
+    var chatOpen    = false;
+
+    function toggleChat() {
+      chatOpen = !chatOpen;
+      var win = document.getElementById('chatWindow');
+      var btn = document.getElementById('chatToggle');
+      win.style.display = chatOpen ? 'flex' : 'none';
+      btn.setAttribute('aria-expanded', chatOpen);
+      document.getElementById('chatBadge').style.display = 'none';
+      if (chatOpen) { document.getElementById('chatInput').focus(); scrollMessages(); }
+    }
+    function scrollMessages() {
+      var box = document.getElementById('chatMessages');
+      box.scrollTop = box.scrollHeight;
+    }
+    function addMessage(role, text) {
+      var msgs   = document.getElementById('chatMessages');
+      var div    = document.createElement('div');
+      div.className = 'chat-msg ' + role;
+      var bubble = document.createElement('div');
+      bubble.className = 'chat-bubble';
+      bubble.innerHTML = text;
+      div.appendChild(bubble);
+      msgs.appendChild(div);
+      scrollMessages();
+    }
+    function showTyping() {
+      var msgs = document.getElementById('chatMessages');
+      var div  = document.createElement('div');
+      div.className = 'chat-msg bot chat-typing';
+      div.id = 'typingIndicator';
+      div.innerHTML = '<div class="chat-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>';
+      msgs.appendChild(div);
+      scrollMessages();
+    }
+    function removeTyping() {
+      var t = document.getElementById('typingIndicator');
+      if (t) t.remove();
+    }
+    function sendMessage() {
+      var input = document.getElementById('chatInput');
+      var msg   = input.value.trim();
+      if (!msg) return;
+      input.value = '';
+      var btn = document.getElementById('chatSendBtn');
+      btn.disabled = true;
+      addMessage('user', msg);
+      chatHistory.push({role: 'user', content: msg});
+      showTyping();
+      var csrf = document.cookie.split('; ').reduce(function(acc, c) {
+        var p = c.split('='); return p[0].trim() === 'csrftoken' ? p[1] : acc;
+      }, '');
+      fetch('/chatbot/chat/', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','X-CSRFToken':csrf},
+        body: JSON.stringify({message: msg, history: chatHistory.slice(-6)})
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(data) {
+        removeTyping();
+        addMessage('bot', data.reply || "Sorry, something went wrong.");
+        chatHistory.push({role:'assistant', content: data.reply || ''});
+        btn.disabled = false;
+        input.focus();
+      })
+      .catch(function() {
+        removeTyping();
+        addMessage('bot', "Connection error. Please check your internet and try again.");
+        btn.disabled = false;
+      });
+    }
+    </script>
+    <!-- ── END CHATBOT ── -->
+
+    {% block extra_js %}{% endblock %}
+
+    <!-- ── PAGE LOADER ── -->
+    <div id="page-loader"></div>
+    <script>
+    var loader = document.getElementById('page-loader');
+    loader.classList.add('loading');
+    window.addEventListener('load', function() {
+      loader.classList.add('done');
+      setTimeout(function() { loader.style.display = 'none'; }, 600);
+    });
+    document.querySelectorAll('a[href]').forEach(function(a) {
+      if (a.href && !a.href.startsWith('javascript') && !a.href.startsWith('#') && !a.target) {
+        a.addEventListener('click', function() { loader.classList.add('loading'); });
+      }
+    });
+    </script>
+
+  </body>
+</html>

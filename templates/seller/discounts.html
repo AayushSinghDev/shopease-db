@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% block title %}Discount Codes - ShopEase{% endblock %}
+{% block extra_css %}
+<style>
+  .seller-sidebar { background: #0d1b3e; min-height: calc(100vh - 70px); padding: 30px 0; }
+  .seller-sidebar .nav-link { color: rgba(255,255,255,0.7); padding: 12px 24px; border-radius: 8px; margin: 2px 12px; font-weight: 500; transition: all 0.2s; display: flex; align-items: center; gap: 10px; }
+  .seller-sidebar .nav-link:hover, .seller-sidebar .nav-link.active { background: rgba(245,166,35,0.15); color: #f5a623; }
+  .seller-sidebar .nav-link i { font-size: 1.1rem; width: 20px; }
+  .sidebar-brand { color: #f5a623; font-size: 1.2rem; font-weight: 800; padding: 0 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
+  .seller-name { color: rgba(255,255,255,0.5); font-size: 0.8rem; padding: 0 24px; margin-bottom: 20px; }
+  .main-content { padding: 30px; background: #f8f9fa; min-height: calc(100vh - 70px); }
+  .form-card { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 30px; }
+  .form-label { font-weight: 700; color: #0d1b3e; font-size: 0.875rem; }
+  .form-control, .form-select { border: 2px solid #e0e7ff; border-radius: 8px; padding: 10px 14px; font-size: 0.9rem; transition: border-color 0.2s; }
+  .form-control:focus, .form-select:focus { border-color: #f5a623; box-shadow: 0 0 0 3px rgba(245,166,35,0.15); }
+  .btn-submit { background: #f5a623; color: #0d1b3e; border: none; border-radius: 8px; padding: 11px 24px; font-weight: 800; font-size: 0.95rem; transition: all 0.25s; }
+  .btn-submit:hover { background: #e09415; }
+  .codes-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); overflow: hidden; }
+  .code-chip { background: #0d1b3e; color: #f5a623; font-family: monospace; font-size: 1rem; font-weight: 800; padding: 6px 16px; border-radius: 8px; letter-spacing: 2px; display: inline-block; }
+  .active-badge { background: #d4edda; color: #155724; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+  .inactive-badge { background: #f8d7da; color: #721c24; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+  .btn-sm-action { border: none; border-radius: 6px; padding: 5px 12px; font-size: 0.8rem; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s; }
+  .btn-toggle { background: #cce5ff; color: #004085; }
+  .btn-toggle:hover { background: #004085; color: #fff; }
+  .btn-del { background: #f8d7da; color: #721c24; }
+  .btn-del:hover { background: #dc3545; color: #fff; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container-fluid p-0">
+  <div class="row g-0">
+    <div class="col-lg-2 col-md-3">
+      <div class="seller-sidebar">
+        <div class="sidebar-brand"><i class="bi bi-shop me-2"></i>Seller Panel</div>
+        <div class="seller-name"><i class="bi bi-person-circle me-1"></i>{{ seller.name }}</div>
+        <nav class="nav flex-column">
+          <a href="/seller/dashboard/" class="nav-link"><i class="bi bi-speedometer2"></i>Dashboard</a>
+          <a href="/seller/products/" class="nav-link"><i class="bi bi-box-seam"></i>My Products</a>
+          <a href="/seller/product/add/" class="nav-link"><i class="bi bi-plus-circle"></i>Add Product</a>
+          <a href="/seller/orders/" class="nav-link"><i class="bi bi-bag-check"></i>My Orders</a>
+          <a href="/seller/discounts/" class="nav-link active"><i class="bi bi-tag"></i>Discounts</a>
+          <hr style="border-color:rgba(255,255,255,0.1); margin:10px 12px;">
+          <a href="/products/" class="nav-link"><i class="bi bi-shop"></i>Visit Store</a>
+          <a href="/accounts/seller-profile/" class="nav-link"><i class="bi bi-person-circle"></i>My Profile</a>
+          <a href="/accounts/logout/" class="nav-link" style="color:#ff6b6b;"><i class="bi bi-box-arrow-right"></i>Logout</a>
+        </nav>
+      </div>
+    </div>
+    <div class="col-lg-10 col-md-9">
+      <div class="main-content">
+        <div style="margin-bottom:30px;">
+          <h1 style="font-size:1.8rem; font-weight:900; color:#0d1b3e;"><i class="bi bi-tag me-2"></i>Discount Codes</h1>
+          <p style="color:#888; margin:0;">Create and manage discount codes for your customers</p>
+        </div>
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        {% endfor %}
+        {% endif %}
+        <!-- CREATE NEW CODE FORM -->
+        <div class="form-card">
+          <h5 style="font-weight:800; color:#0d1b3e; margin-bottom:20px; padding-bottom:12px; border-bottom:3px solid #f5a623;"><i class="bi bi-plus-circle me-2"></i>Generate New Code</h5>
+          <form method="POST" action="/seller/discounts/add/">
+            {% csrf_token %}
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label class="form-label">Code Name *</label>
+                <input type="text" name="code" class="form-control" placeholder="e.g. SAVE10" style="text-transform:uppercase; font-family:monospace; font-weight:700; letter-spacing:2px;" required oninput="this.value=this.value.toUpperCase()">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Discount Type *</label>
+                <select name="discount_type" class="form-select">
+                  <option value="percentage">Percentage (%)</option>
+                  <option value="flat">Flat Amount (₹)</option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Value *</label>
+                <input type="number" name="discount_value" class="form-control" placeholder="10" step="0.01" min="0" required>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Min. Order (₹)</label>
+                <input type="number" name="minimum_order_value" class="form-control" placeholder="0" min="0" value="0">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Expiry Date *</label>
+                <input type="date" name="expiry_date" class="form-control" required>
+              </div>
+              <div class="col-md-1">
+                <label class="form-label">Limit</label>
+                <input type="number" name="usage_limit" class="form-control" placeholder="10" min="1" value="100">
+              </div>
+            </div>
+            <div class="mt-3">
+              <button type="submit" class="btn-submit"><i class="bi bi-plus-lg me-2"></i>Create Code</button>
+            </div>
+          </form>
+        </div>
+        <!-- EXISTING CODES -->
+        <div class="codes-card">
+          <div style="padding:20px 25px; border-bottom:1px solid #f0f0f0;">
+            <h5 style="font-weight:800; color:#0d1b3e; margin:0;">Your Discount Codes ({{ codes|length }})</h5>
+          </div>
+          {% if codes %}
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead style="background:#f8f9fa;">
+                <tr>
+                  <th style="padding:14px 20px; font-size:0.8rem; color:#999; font-weight:700;">CODE</th>
+                  <th style="padding:14px 20px; font-size:0.8rem; color:#999; font-weight:700;">TYPE</th>
+                  <th style="padding:14px 20px; font-size:0.8rem; color:#999; font-weight:700;">VALUE</th>
+                  <th style="padding:14px 20px; font-size:0.8rem; color:#999; font-weight:700;">MIN ORDER</th>
+                  <th style="padding:14px 20px; font-size:0.8rem; color:#999; font-weight:700;">EXPIRY</th>
+                  <th style="padding:14px 20px; font-size:0.8rem; color:#999; font-weight:700;">USED</th>
+                  <th style="padding:14px 20px; font-size:0.8rem; color:#999; font-weight:700;">STATUS</th>
+                  <th style="padding:14px 20px; font-size:0.8rem; color:#999; font-weight:700;">ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for code in codes %}
+                <tr>
+                  <td style="padding:14px 20px;"><span class="code-chip">{{ code.code }}</span></td>
+                  <td style="padding:14px 20px; font-size:0.85rem; color:#555;">{{ code.get_discount_type_display }}</td>
+                  <td style="padding:14px 20px; font-weight:700; color:#f5a623;">{% if code.discount_type == 'percentage' %}{{ code.discount_value }}%{% else %}₹{{ code.discount_value }}{% endif %}</td>
+                  <td style="padding:14px 20px; font-size:0.85rem;">₹{{ code.minimum_order_value }}</td>
+                  <td style="padding:14px 20px; font-size:0.85rem; color:#888;">{{ code.expiry_date|date:"d M Y" }}</td>
+                  <td style="padding:14px 20px; text-align:center;"><span style="font-weight:700; color:#0d1b3e;">{{ code.used_count }}</span><span style="color:#aaa;">/{{ code.usage_limit }}</span></td>
+                  <td style="padding:14px 20px;">{% if code.is_active %}<span class="active-badge">Active</span>{% else %}<span class="inactive-badge">Inactive</span>{% endif %}</td>
+                  <td style="padding:14px 20px;">
+                    <div class="d-flex gap-2">
+                      <form method="POST" action="/seller/discounts/toggle/{{ code.id }}/" style="display:inline;">{% csrf_token %}<button type="submit" class="btn-sm-action btn-toggle"><i class="bi bi-toggle-on"></i>{% if code.is_active %}Disable{% else %}Enable{% endif %}</button></form>
+                      <form method="POST" action="/seller/discounts/delete/{{ code.id }}/" style="display:inline;" onsubmit="return confirm('Delete discount code &quot;{{ code.code }}&quot;?')">{% csrf_token %}<button type="submit" class="btn-sm-action btn-del"><i class="bi bi-trash3"></i>Delete</button></form>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="text-center py-5 text-muted">
+            <i class="bi bi-tag" style="font-size:4rem; color:#ddd;"></i>
+            <h5 class="mt-3">No discount codes yet</h5>
+            <p>Create your first discount code above.</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

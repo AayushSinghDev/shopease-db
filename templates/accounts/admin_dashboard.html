@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard - ShopEase{% endblock %}
+{% block extra_css %}
+<style>
+  .admin-header { background: linear-gradient(135deg, #0d1b3e, #162447); padding: 40px 0; color: white; }
+  .stat-card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.07); display: flex; align-items: center; gap: 18px; }
+  .stat-icon { width: 58px; height: 58px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0; }
+  .stat-number { font-size: 2rem; font-weight: 900; color: #0d1b3e; line-height: 1; }
+  .stat-label { font-size: 0.82rem; color: #888; font-weight: 600; margin-top: 4px; }
+  .nav-panel { background: #fff; border-radius: 16px; padding: 20px 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.07); margin-bottom: 20px; }
+  .nav-panel a { display: inline-flex; align-items: center; gap: 8px; background: #f0f4ff; color: #0d1b3e; border-radius: 10px; padding: 10px 18px; font-weight: 700; font-size: 0.9rem; text-decoration: none; margin: 4px; transition: all 0.2s; }
+  .nav-panel a:hover, .nav-panel a.active { background: #0d1b3e; color: #f5a623; }
+  .section-card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.07); margin-bottom: 20px; }
+  .section-card h5 { font-weight: 800; color: #0d1b3e; padding-bottom: 12px; border-bottom: 3px solid #f5a623; display: inline-block; margin-bottom: 20px; }
+  .badge-pending { background: #fff3cd; color: #856404; font-size: 0.78rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+  .badge-approved { background: #d4edda; color: #155724; font-size: 0.78rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <h1 style="font-weight:800;font-size:1.8rem;"><i class="bi bi-shield-fill-check me-2" style="color:#f5a623;"></i>Admin Dashboard</h1>
+        <p class="mb-0 text-white-50">Welcome, {{ name }} — ShopEase Control Panel</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container py-4">
+
+  <!-- Stats -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#e3f2fd;"><i class="bi bi-people-fill" style="color:#2196f3;"></i></div>
+        <div><div class="stat-number">{{ total_customers }}</div><div class="stat-label">Customers</div></div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fff3e0;"><i class="bi bi-shop-window" style="color:#f5a623;"></i></div>
+        <div>
+          <div class="stat-number">{{ total_sellers }}</div>
+          <div class="stat-label">Sellers {% if pending_sellers > 0 %}<span class="badge-pending">{{ pending_sellers }} pending</span>{% endif %}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#e8f5e9;"><i class="bi bi-box-seam-fill" style="color:#28a745;"></i></div>
+        <div><div class="stat-number">{{ total_products }}</div><div class="stat-label">Products</div></div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fce4ec;"><i class="bi bi-bag-check-fill" style="color:#dc3545;"></i></div>
+        <div><div class="stat-number">{{ total_orders }}</div><div class="stat-label">Orders</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Nav -->
+  <div class="nav-panel mb-4">
+    <strong style="font-size:0.82rem;color:#888;letter-spacing:1px;text-transform:uppercase;">Manage</strong><br>
+    <a href="/admin-panel/sellers/" class="mt-2"><i class="bi bi-shop-window"></i>Sellers {% if pending_sellers > 0 %}<span style="background:#dc3545;color:#fff;border-radius:10px;font-size:0.7rem;padding:1px 6px;">{{ pending_sellers }}</span>{% endif %}</a>
+    <a href="/admin-panel/customers/"><i class="bi bi-people"></i>Customers</a>
+    <a href="/admin-panel/products/"><i class="bi bi-box-seam"></i>Products</a>
+    <a href="/admin-panel/orders/"><i class="bi bi-bag-check"></i>Orders</a>
+    <a href="/admin-panel/categories/"><i class="bi bi-grid"></i>Categories</a>
+    <a href="/admin-panel/revenue/"><i class="bi bi-bar-chart"></i>Revenue</a>
+    <a href="/admin-panel/reviews/"><i class="bi bi-star-half"></i>Reviews</a>
+    <a href="/admin/"><i class="bi bi-sliders"></i>Django Admin</a>
+  </div>
+
+  <div class="row g-3">
+    <!-- Pending Sellers -->
+    {% if pending_sellers > 0 %}
+    <div class="col-md-6">
+      <div class="section-card">
+        <h5><i class="bi bi-exclamation-circle-fill me-2" style="color:#f5a623;"></i>Pending Seller Approvals</h5>
+        {% for seller in all_sellers %}
+          {% if not seller.is_approved %}
+          <div class="d-flex align-items-center justify-content-between py-2" style="border-bottom:1px solid #f0f0f0;">
+            <div>
+              <div style="font-weight:700;color:#0d1b3e;font-size:0.92rem;">{{ seller.name }}</div>
+              <div style="font-size:0.8rem;color:#888;">{{ seller.email }}</div>
+            </div>
+            <form action="/admin-panel/sellers/" method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="seller_id" value="{{ seller.id }}">
+              <button name="action" value="approve" class="btn btn-sm btn-success" style="border-radius:8px;font-weight:700;font-size:0.8rem;">Approve</button>
+            </form>
+          </div>
+          {% endif %}
+        {% endfor %}
+        <a href="/admin-panel/sellers/" style="color:#f5a623;font-weight:700;text-decoration:none;font-size:0.88rem;display:block;margin-top:14px;">View all sellers <i class="bi bi-arrow-right"></i></a>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Customers -->
+    <div class="col-md-{% if pending_sellers > 0 %}6{% else %}12{% endif %}">
+      <div class="section-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0"><i class="bi bi-people me-2"></i>Recent Customers</h5>
+          <a href="/admin-panel/customers/" style="color:#f5a623;font-weight:700;text-decoration:none;font-size:0.88rem;">View All</a>
+        </div>
+        {% for customer in all_customers|slice:":5" %}
+        <div class="d-flex align-items-center justify-content-between py-2" style="border-bottom:1px solid #f0f0f0;">
+          <div>
+            <div style="font-weight:700;color:#0d1b3e;font-size:0.92rem;">{{ customer.name }}</div>
+            <div style="font-size:0.8rem;color:#888;">{{ customer.email }}</div>
+          </div>
+          <span style="font-size:0.8rem;color:#888;">{{ customer.phone }}</span>
+        </div>
+        {% empty %}
+        <p style="color:#bbb;font-size:0.9rem;">No customers yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

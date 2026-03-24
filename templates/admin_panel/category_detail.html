@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}{{ category.name }} — Admin{% endblock %}
+{% block extra_css %}<style>
+  .ap-header{background:linear-gradient(135deg,#0d1b3e,#162447);padding:30px 0;color:#fff}
+  .ap-nav{background:#fff;border-bottom:2px solid #f0f0f0;padding:0}
+  .ap-nav a{color:#555;font-weight:600;padding:14px 18px;font-size:.88rem;border-bottom:3px solid transparent;display:inline-block;text-decoration:none}
+  .ap-nav a:hover{color:#0d1b3e}.ap-nav a.active{color:#0d1b3e;border-bottom-color:#f5a623}
+  .detail-card{background:#fff;border-radius:16px;padding:24px;box-shadow:0 4px 15px rgba(0,0,0,.07);margin-bottom:18px}
+  .detail-card h5{font-weight:800;color:#0d1b3e;padding-bottom:10px;border-bottom:2px solid #f5a623;display:inline-block;margin-bottom:16px}
+  .tbl{width:100%;border-collapse:collapse;font-size:.88rem}
+  .tbl th{background:#0d1b3e;color:#f5a623;padding:10px 12px;text-align:left;font-weight:700}
+  .tbl td{padding:10px 12px;border-bottom:1px solid #f5f5f5;vertical-align:middle}
+  .tbl tr:hover td{background:#fafafa}
+  .prod-img{width:40px;height:40px;border-radius:8px;object-fit:cover;background:#f0f4ff;}
+  .btn-del{background:#dc3545;color:#fff;border:none;border-radius:7px;padding:5px 12px;font-size:.8rem;font-weight:700;cursor:pointer;}
+</style>{% endblock %}
+{% block content %}
+<div class="ap-header"><div class="container">
+  <a href="/admin-panel/categories/" style="color:rgba(255,255,255,0.7);text-decoration:none;font-size:.85rem;"><i class="bi bi-arrow-left me-1"></i>Back to Categories</a>
+  <h1 style="font-weight:800;font-size:1.5rem;margin-top:8px;"><i class="bi bi-tag-fill me-2" style="color:#f5a623;"></i>{{ category.name }}</h1>
+  <p class="mb-0" style="opacity:.7;font-size:.88rem;">{{ products|length }} product{% if products|length != 1 %}s{% endif %} in this category</p>
+</div></div>
+<div class="ap-nav"><div class="container">
+  <a href="/accounts/dashboard/admin/"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+  <a href="/admin-panel/sellers/"><i class="bi bi-shop me-1"></i>Sellers</a>
+  <a href="/admin-panel/customers/"><i class="bi bi-people me-1"></i>Customers</a>
+  <a href="/admin-panel/products/"><i class="bi bi-box-seam me-1"></i>Products</a>
+  <a href="/admin-panel/orders/"><i class="bi bi-bag-check me-1"></i>Orders</a>
+  <a href="/admin-panel/categories/" class="active"><i class="bi bi-grid me-1"></i>Categories</a>
+  <a href="/admin-panel/revenue/"><i class="bi bi-bar-chart me-1"></i>Revenue</a>
+  <a href="/admin-panel/reviews/"><i class="bi bi-star-half me-1"></i>Reviews</a>
+</div></div>
+<div class="container py-4">
+  <div class="detail-card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-0"><i class="bi bi-box-seam me-2"></i>All Products in "{{ category.name }}"</h5>
+      <form method="POST" onsubmit="return confirm('Delete category {{ category.name }} and unassign all its products?')">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="delete_category">
+        <button type="submit" class="btn-del"><i class="bi bi-trash3 me-1"></i>Delete Category</button>
+      </form>
+    </div>
+    {% if products %}
+    <table class="tbl">
+      <thead><tr><th>Image</th><th>Product Name</th><th>Seller</th><th>Price</th><th>Stock</th><th>Action</th></tr></thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td>{% if p.image_url %}<img src="{{ p.image_url }}" class="prod-img">{% else %}<div class="prod-img d-flex align-items-center justify-content-center"><i class="bi bi-image" style="color:#ccc;"></i></div>{% endif %}</td>
+          <td style="font-weight:600;"><a href="/admin-panel/products/{{ p.id }}/" style="color:#0d1b3e;text-decoration:none;">{{ p.name|truncatechars:50 }}</a></td>
+          <td style="font-size:.85rem;">{{ p.seller.name }}</td>
+          <td style="font-weight:800;">₹{{ p.price }}</td>
+          <td>{{ p.stock }}</td>
+          <td>
+            <div class="d-flex gap-2">
+              <a href="/admin-panel/products/{{ p.id }}/" style="background:#0d1b3e;color:#f5a623;border:none;border-radius:7px;padding:5px 12px;font-size:.8rem;font-weight:700;text-decoration:none;"><i class="bi bi-eye me-1"></i>View</a>
+              <form method="POST" onsubmit="return confirm('Delete {{ p.name }}?')">
+                {% csrf_token %}<input type="hidden" name="action" value="delete_product">
+                <input type="hidden" name="product_id" value="{{ p.id }}">
+                <button type="submit" class="btn-del"><i class="bi bi-trash3 me-1"></i>Del</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="text-align:center;padding:50px;color:#bbb;">
+      <i class="bi bi-box-seam" style="font-size:4rem;"></i>
+      <p class="mt-3">No products in this category yet.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

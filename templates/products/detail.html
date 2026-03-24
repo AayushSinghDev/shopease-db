@@ -1,0 +1,408 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.name }} — Buy Online at ShopEase{% endblock %}
+{% block meta_description %}Buy {{ product.name }} online at ShopEase. {{ product.description|truncatechars:120 }} Free delivery above ₹499. Best price guaranteed.{% endblock %}
+{% block og_title %}{{ product.name }} — ShopEase{% endblock %}
+{% block og_description %}{{ product.description|truncatechars:120 }}{% endblock %}
+{% block schema_org %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "{{ product.name }}",
+  "description": "{{ product.description|truncatechars:200 }}",
+  "offers": {
+    "@type": "Offer",
+    "priceCurrency": "INR",
+    "price": "{{ product.price }}",
+    "availability": "{% if product.stock > 0 %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}"
+  }
+}
+</script>
+{% endblock %}
+{% block extra_css %}
+<style>
+  .breadcrumb-bar{background:#0d1b3e;padding:14px 0;}
+  /* Image Gallery */
+  .gallery-wrap{display:flex;gap:14px;align-items:flex-start;}
+  .thumb-col{display:flex;flex-direction:column;gap:8px;width:72px;flex-shrink:0;}
+  .thumb{width:72px;height:72px;border-radius:8px;border:2px solid #e0e7ff;cursor:pointer;overflow:hidden;object-fit:cover;transition:border-color 0.15s;}
+  .thumb:hover,.thumb.active{border-color:#0d1b3e;}
+  .main-img-wrap{flex:1;border-radius:16px;overflow:hidden;background:#f0f4ff;height:460px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 30px rgba(0,0,0,0.1);}
+  .main-img-wrap img{width:100%;height:100%;object-fit:contain;}
+  .main-img-wrap .no-img{font-size:8rem;color:#c0cce0;}
+  /* Product Info */
+  .product-info-card{background:#fff;border-radius:20px;padding:30px;box-shadow:0 8px 30px rgba(0,0,0,0.08);}
+  .product-category-badge{background:#f0f4ff;color:#0d1b3e;font-size:0.78rem;font-weight:700;padding:5px 14px;border-radius:20px;display:inline-block;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;}
+  .product-detail-name{font-size:1.6rem;font-weight:900;color:#0d1b3e;margin-bottom:10px;line-height:1.3;}
+  .product-detail-price{font-size:2rem;font-weight:900;color:#0d1b3e;margin-bottom:6px;}
+  .stock-status{display:inline-flex;align-items:center;gap:6px;font-size:0.88rem;font-weight:700;padding:6px 14px;border-radius:20px;margin-bottom:16px;}
+  .stock-ok{background:#d4edda;color:#155724;}
+  .stock-low-warn{background:#fff3cd;color:#856404;}
+  .stock-out{background:#f8d7da;color:#721c24;}
+  .product-detail-desc{color:#555;line-height:1.8;font-size:0.92rem;margin-bottom:20px;padding:16px;background:#f8f9fa;border-radius:12px;border-left:4px solid #f5a623;}
+  .divider{border:none;border-top:2px solid #f0f0f0;margin:16px 0;}
+  .qty-label{font-weight:700;color:#0d1b3e;margin-bottom:8px;font-size:0.92rem;}
+  .qty-input-group{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+  .qty-btn{background:#0d1b3e;color:#f5a623;border:none;border-radius:8px;width:38px;height:38px;font-size:1.1rem;font-weight:700;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;}
+  .qty-btn:hover{background:#f5a623;color:#0d1b3e;}
+  .qty-display{background:#f0f4ff;border:2px solid #e0e7ff;border-radius:8px;width:56px;height:38px;text-align:center;font-weight:700;color:#0d1b3e;font-size:1rem;}
+  .btn-add-to-cart-big{background:#0d1b3e;color:#f5a623;border:none;border-radius:12px;padding:13px 28px;font-weight:800;font-size:0.95rem;width:100%;transition:all 0.25s;cursor:pointer;margin-bottom:10px;}
+  .btn-add-to-cart-big:hover{background:#f5a623;color:#0d1b3e;transform:translateY(-2px);}
+  .btn-view-cart{background:transparent;color:#0d1b3e;border:2px solid #0d1b3e;border-radius:12px;padding:11px 28px;font-weight:700;font-size:0.92rem;width:100%;text-decoration:none;display:block;text-align:center;transition:all 0.25s;}
+  .btn-view-cart:hover{background:#0d1b3e;color:#f5a623;}
+  .btn-wishlist{border:2px solid #dc3545;color:#dc3545;background:transparent;border-radius:12px;padding:10px 20px;font-weight:700;font-size:0.88rem;width:100%;cursor:pointer;transition:all 0.25s;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .btn-wishlist.active{background:#dc3545;color:#fff;}
+  .btn-wishlist:hover{background:#dc3545;color:#fff;}
+  .seller-info{background:#f8f9fa;border-radius:12px;padding:14px 18px;margin-top:16px;display:flex;align-items:center;gap:12px;}
+  .seller-avatar{width:40px;height:40px;background:#0d1b3e;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#f5a623;font-size:1.1rem;}
+  /* Variants */
+  .variant-section{margin-bottom:16px;}
+  .variant-label{font-weight:700;color:#0d1b3e;font-size:0.88rem;margin-bottom:8px;}
+  .variant-options{display:flex;flex-wrap:wrap;gap:8px;}
+  .variant-btn{padding:6px 16px;border-radius:8px;border:2px solid #dee2e6;background:#fff;color:#333;font-size:0.85rem;font-weight:600;cursor:pointer;transition:all 0.2s;}
+  .variant-btn:hover,.variant-btn.selected{border-color:#0d1b3e;background:#0d1b3e;color:#f5a623;}
+  /* Reviews */
+  .star-rating{display:flex;gap:4px;margin-bottom:6px;}
+  .star{font-size:1.4rem;color:#ddd;cursor:pointer;transition:color 0.15s;}
+  .star.filled{color:#f5a623;}
+  .review-card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f0f0f0;}
+  .review-form-card{background:#f8f9fa;border-radius:16px;padding:24px;border:2px solid #e0e7ff;}
+  .section-heading{font-size:1.3rem;font-weight:800;color:#0d1b3e;padding-bottom:10px;border-bottom:3px solid #f5a623;display:inline-block;margin-bottom:20px;}
+  /* Related products */
+  .product-card{background:#fff;border-radius:14px;overflow:hidden;transition:all 0.3s;box-shadow:0 4px 15px rgba(0,0,0,0.07);height:100%;display:flex;flex-direction:column;}
+  .product-card:hover{transform:translateY(-5px);box-shadow:0 12px 30px rgba(0,0,0,0.12);}
+  .product-img-wrap{height:180px;background:#f0f4ff;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+  .product-img-wrap img{width:100%;height:100%;object-fit:cover;}
+  .product-body{padding:14px;flex:1;display:flex;flex-direction:column;}
+  .product-name{font-weight:700;color:#0d1b3e;font-size:0.9rem;margin-bottom:6px;}
+  .product-price{font-size:1.1rem;font-weight:900;color:#0d1b3e;margin-bottom:10px;}
+  .btn-add-cart-sm{background:#0d1b3e;color:#f5a623;border:none;border-radius:8px;padding:8px;font-weight:700;font-size:0.82rem;width:100%;cursor:pointer;transition:all 0.2s;}
+  .btn-add-cart-sm:hover{background:#f5a623;color:#0d1b3e;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="breadcrumb-bar">
+  <div class="container">
+    <nav><ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a href="/" style="color:#f5a623">Home</a></li>
+      <li class="breadcrumb-item"><a href="/products/" style="color:rgba(255,255,255,0.7)">Shop</a></li>
+      {% if product.category %}<li class="breadcrumb-item"><a href="/products/?category={{ product.category.id }}" style="color:rgba(255,255,255,0.7)">{{ product.category.name }}</a></li>{% endif %}
+      <li class="breadcrumb-item active text-white">{{ product.name }}</li>
+    </ol></nav>
+  </div>
+</div>
+
+<div class="container py-5">
+  <div class="row g-5">
+    <!-- IMAGE GALLERY -->
+    <div class="col-lg-5">
+      <div class="gallery-wrap">
+        {% if all_images|length > 1 %}
+        <div class="thumb-col">
+          {% for img_url in all_images %}
+          <img src="{{ img_url }}" class="thumb {% if forloop.first %}active{% endif %}" onclick="setMain('{{ img_url }}',this)" alt="thumb">
+          {% endfor %}
+        </div>
+        {% endif %}
+        <div class="main-img-wrap" id="mainImgWrap">
+          {% if all_images %}
+            <img src="{{ all_images.0 }}" id="mainImg" alt="{{ product.name }}">
+          {% else %}
+            <i class="bi bi-image no-img"></i>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCT INFO -->
+    <div class="col-lg-7">
+      <div class="product-info-card">
+        {% if product.category %}<span class="product-category-badge"><i class="bi bi-tag-fill me-1"></i>{{ product.category.name }}</span>{% endif %}
+        <h1 class="product-detail-name">{{ product.name }}</h1>
+
+        <!-- Rating -->
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="d-flex align-items-center gap-1">
+            {% for i in "12345" %}{% if forloop.counter <= avg_rating %}<i class="bi bi-star-fill" style="color:#f5a623;font-size:0.9rem;"></i>{% else %}<i class="bi bi-star" style="color:#ddd;font-size:0.9rem;"></i>{% endif %}{% endfor %}
+          </div>
+          <span style="font-weight:700;color:#0d1b3e;">{{ avg_rating }}</span>
+          <span style="color:#888;font-size:0.85rem;">({{ review_count }} review{% if review_count != 1 %}s{% endif %})</span>
+        </div>
+
+        <div class="product-detail-price">₹{{ product.price }}</div>
+
+        {% if product.stock == 0 %}<span class="stock-status stock-out"><i class="bi bi-x-circle-fill"></i> Out of Stock</span>
+        {% elif product.stock <= 5 %}<span class="stock-status stock-low-warn"><i class="bi bi-exclamation-triangle-fill"></i> Only {{ product.stock }} left!</span>
+        {% else %}<span class="stock-status stock-ok"><i class="bi bi-check-circle-fill"></i> In Stock ({{ product.stock }} available)</span>{% endif %}
+
+        <hr class="divider">
+
+        <!-- Variants -->
+        {% for vtype, vlist in variants_grouped.items %}
+        <div class="variant-section">
+          <div class="variant-label">{{ vtype }}:</div>
+          <div class="variant-options">
+            {% for v in vlist %}
+            <button type="button" class="variant-btn" onclick="selectVariant(this,'{{ v.id }}','{{ v.price_extra }}','{{ v.stock }}')" data-id="{{ v.id }}" data-price="{{ v.price_extra }}" data-stock="{{ v.stock }}">
+              {{ v.value }}{% if v.price_extra > 0 %} (+₹{{ v.price_extra }}){% endif %}
+            </button>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+
+        <div class="product-detail-desc">{{ product.description }}</div>
+
+        {% if product.stock > 0 %}
+          {% if request.session.user_role == 'customer' or not request.session.user_id %}
+          <form action="/cart/add/{{ product.id }}/" method="POST" id="addCartForm">
+            {% csrf_token %}
+            <input type="hidden" name="variant_id" id="selectedVariant" value="">
+            <div class="qty-label">Quantity:</div>
+            <div class="qty-input-group">
+              <button type="button" class="qty-btn" onclick="changeQty(-1)">−</button>
+              <input type="number" name="quantity" id="qty-field" class="qty-display" value="1" min="1" max="{{ product.stock }}" readonly>
+              <button type="button" class="qty-btn" onclick="changeQty(1)">+</button>
+              <span style="color:#999;font-size:0.82rem">Max: {{ product.stock }}</span>
+            </div>
+            <button type="submit" class="btn-add-to-cart-big"><i class="bi bi-cart-plus me-2"></i>Add to Cart</button>
+          </form>
+          {% else %}
+          <div style="background:#f0f4ff;border-radius:12px;padding:14px;text-align:center;color:#0d1b3e;font-size:0.9rem;margin-bottom:12px;">
+            <i class="bi bi-info-circle me-2"></i>
+            {% if request.session.user_role == 'seller' %}Sellers cannot purchase products.{% else %}Admins cannot purchase products.{% endif %}
+          </div>
+          {% endif %}
+        {% else %}
+        <button class="btn-add-to-cart-big" disabled style="opacity:0.5;cursor:not-allowed;"><i class="bi bi-x-circle me-2"></i>Out of Stock</button>
+        {% endif %}
+
+        {% if is_customer %}
+        <form action="/products/wishlist/toggle/{{ product.id }}/" method="POST">
+          {% csrf_token %}
+          <button type="submit" class="btn-wishlist {% if in_wishlist %}active{% endif %}">
+            <i class="bi bi-heart{% if in_wishlist %}-fill{% endif %}"></i>
+            {% if in_wishlist %}Remove from Wishlist{% else %}Add to Wishlist{% endif %}
+          </button>
+        </form>
+        {% endif %}
+
+        {% if request.session.user_role == 'customer' or not request.session.user_id %}
+        <a href="/cart/" class="btn-view-cart"><i class="bi bi-cart3 me-2"></i>View Cart</a>
+        {% endif %}
+
+        <!-- Seller Info -->
+        {% if product.seller %}
+        <div class="seller-info">
+          <div class="seller-avatar"><i class="bi bi-shop"></i></div>
+          <div>
+            <div style="font-weight:700;color:#0d1b3e;font-size:0.88rem;">Sold by: {{ product.seller.name }}</div>
+            <div style="font-size:0.78rem;color:#999;">Verified Seller</div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ── REVIEWS ── -->
+  <div class="row mt-5">
+    <div class="col-12"><h2 class="section-heading"><i class="bi bi-chat-square-text-fill me-2"></i>Customer Reviews</h2></div>
+
+    <div class="col-lg-4 mb-4">
+      <!-- Avg rating summary -->
+      <div class="review-form-card text-center mb-4">
+        <div style="font-size:3rem;font-weight:900;color:#0d1b3e;line-height:1;">{{ avg_rating }}</div>
+        <div class="d-flex justify-content-center gap-1 my-2">
+          {% for i in "12345" %}{% if forloop.counter <= avg_rating %}<i class="bi bi-star-fill" style="color:#f5a623;font-size:1.2rem;"></i>{% else %}<i class="bi bi-star" style="color:#ddd;font-size:1.2rem;"></i>{% endif %}{% endfor %}
+        </div>
+        <div style="font-size:0.82rem;color:#888;">{{ review_count }} review{% if review_count != 1 %}s{% endif %}</div>
+      </div>
+
+      {% if is_customer %}
+      {% if user_review %}
+      <!-- Already reviewed - show review with edit/delete options -->
+      <div class="review-form-card">
+        <h5 style="font-weight:800;color:#0d1b3e;margin-bottom:12px;"><i class="bi bi-check-circle-fill me-2" style="color:#28a745;"></i>Your Review</h5>
+        <div class="d-flex align-items-center gap-2 mb-2">
+          {% for i in "12345" %}{% if forloop.counter <= user_review.rating %}<i class="bi bi-star-fill" style="color:#f5a623;"></i>{% else %}<i class="bi bi-star" style="color:#ddd;"></i>{% endif %}{% endfor %}
+          <span style="font-weight:700;color:#555;">{{ user_review.rating }}/5</span>
+        </div>
+        {% if user_review.comment %}<p style="color:#555;font-size:0.9rem;">{{ user_review.comment }}</p>{% endif %}
+        <div class="d-flex gap-2 mt-3">
+          <button onclick="document.getElementById('editReviewForm').style.display='block';this.parentElement.parentElement.style.display='none';" style="background:#0d1b3e;color:#f5a623;border:none;border-radius:10px;padding:8px 18px;font-weight:700;font-size:0.85rem;flex:1;">
+            <i class="bi bi-pencil-fill me-1"></i>Edit Review
+          </button>
+          <form action="/products/review/delete/{{ user_review.id }}/" method="POST" style="flex:1;">
+            {% csrf_token %}
+            <button type="submit" style="background:transparent;border:1.5px solid #dc3545;color:#dc3545;border-radius:10px;padding:8px 18px;font-weight:700;width:100%;font-size:0.85rem;" onclick="return confirm('Delete your review?')">
+              <i class="bi bi-trash me-1"></i>Delete
+            </button>
+          </form>
+        </div>
+      </div>
+      <!-- Hidden edit form -->
+      <div id="editReviewForm" style="display:none;" class="review-form-card mt-2">
+        <h5 style="font-weight:800;color:#0d1b3e;margin-bottom:16px;"><i class="bi bi-pencil-fill me-2"></i>Edit Review</h5>
+        <form action="/products/detail/{{ product.id }}/" method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="review">
+          <div class="mb-3">
+            <label style="font-weight:700;color:#0d1b3e;font-size:0.88rem;">Rating *</label>
+            <div class="star-rating mt-1" id="starRating">
+              {% for i in "12345" %}<span class="star {% if forloop.counter <= user_review.rating %}filled{% endif %}" data-value="{{ forloop.counter }}">&#9733;</span>{% endfor %}
+            </div>
+            <input type="hidden" name="rating" id="ratingInput" value="{{ user_review.rating }}">
+          </div>
+          <div class="mb-3">
+            <label style="font-weight:700;color:#0d1b3e;font-size:0.88rem;">Comment (optional)</label>
+            <textarea name="comment" class="form-control mt-1" rows="3">{{ user_review.comment }}</textarea>
+          </div>
+          <button type="submit" style="background:#0d1b3e;color:#f5a623;border:none;border-radius:10px;padding:10px 20px;font-weight:800;width:100%;font-size:0.9rem;">
+            <i class="bi bi-send-fill me-2"></i>Update Review
+          </button>
+        </form>
+      </div>
+      {% else %}
+      <!-- No review yet - show write form -->
+      <div class="review-form-card">
+        <h5 style="font-weight:800;color:#0d1b3e;margin-bottom:16px;"><i class="bi bi-plus-circle-fill me-2"></i>Write a Review</h5>
+        <form action="/products/detail/{{ product.id }}/" method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="review">
+          <div class="mb-3">
+            <label style="font-weight:700;color:#0d1b3e;font-size:0.88rem;">Rating *</label>
+            <div class="star-rating mt-1" id="starRating">
+              {% for i in "12345" %}<span class="star" data-value="{{ forloop.counter }}">&#9733;</span>{% endfor %}
+            </div>
+            <input type="hidden" name="rating" id="ratingInput" value="">
+          </div>
+          <div class="mb-3">
+            <label style="font-weight:700;color:#0d1b3e;font-size:0.88rem;">Comment (optional)</label>
+            <textarea name="comment" class="form-control mt-1" rows="3" placeholder="Share your experience..."></textarea>
+          </div>
+          <button type="submit" style="background:#0d1b3e;color:#f5a623;border:none;border-radius:10px;padding:10px 20px;font-weight:800;width:100%;font-size:0.9rem;">
+            <i class="bi bi-send-fill me-2"></i>Submit Review
+          </button>
+        </form>
+      </div>
+      {% endif %}
+      {% elif not request.session.user_id %}
+      <div class="review-form-card text-center">
+        <i class="bi bi-person-circle" style="font-size:2.5rem;color:#ccc;"></i>
+        <p class="mt-3" style="color:#888;font-size:0.88rem;">Login as a customer to write a review.</p>
+        <a href="/accounts/login/" style="background:#0d1b3e;color:#f5a623;border:none;border-radius:10px;padding:10px 22px;font-weight:700;text-decoration:none;display:inline-block;">Login to Review</a>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="col-lg-8">
+      {% if reviews %}
+        {% for review in reviews %}
+        <div class="review-card">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div style="font-weight:700;color:#0d1b3e;font-size:0.92rem;"><i class="bi bi-person-circle me-2" style="color:#0d1b3e;"></i>{{ review.customer.name }}</div>
+              <div class="d-flex gap-1 mt-1">
+                {% for i in "12345" %}{% if forloop.counter <= review.rating %}<i class="bi bi-star-fill" style="color:#f5a623;font-size:0.8rem;"></i>{% else %}<i class="bi bi-star" style="color:#ddd;font-size:0.8rem;"></i>{% endif %}{% endfor %}
+                <span style="font-size:0.78rem;font-weight:700;color:#555;margin-left:4px;">{{ review.rating }}/5</span>
+              </div>
+            </div>
+            <div style="font-size:0.78rem;color:#aaa;">{{ review.created_at|date:"d M Y" }}</div>
+          </div>
+          {% if review.comment %}<div style="color:#555;font-size:0.88rem;line-height:1.7;margin-top:8px;">{{ review.comment }}</div>
+          {% else %}<div style="color:#bbb;font-style:italic;font-size:0.85rem;margin-top:8px;">No comment added.</div>{% endif %}
+        </div>
+        {% endfor %}
+      {% else %}
+        <div style="text-align:center;padding:60px 20px;color:#bbb;">
+          <i class="bi bi-chat-square" style="font-size:4rem;"></i>
+          <h5 class="mt-3" style="color:#ccc;">No reviews yet</h5>
+          <p style="font-size:0.88rem;">Be the first to review this product!</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ── RELATED PRODUCTS ── -->
+  {% if related_products %}
+  <div class="mt-5">
+    <h2 class="section-heading"><i class="bi bi-grid-fill me-2"></i>Related Products</h2>
+    <div class="row g-3">
+      {% for rp in related_products %}
+      <div class="col-6 col-md-4 col-lg-2">
+        <div class="product-card">
+          <div class="product-img-wrap">
+            {% if rp.image_url %}<img src="{{ rp.image_url }}" alt="{{ rp.name }}">
+            {% else %}<i class="bi bi-image" style="font-size:3rem;color:#c0cce0;"></i>{% endif %}
+          </div>
+          <div class="product-body">
+            {% if rp.category %}<div style="font-size:0.7rem;color:#f5a623;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">{{ rp.category.name }}</div>{% endif %}
+            <div class="product-name">{{ rp.name|truncatechars:45 }}</div>
+            {% if rp.avg_r|default:0 > 0 %}
+            <div class="d-flex gap-1 mb-2">
+              {% for i in "12345" %}{% if forloop.counter <= rp.avg_r|default:0 %}<i class="bi bi-star-fill" style="color:#f5a623;font-size:0.65rem;"></i>{% else %}<i class="bi bi-star" style="color:#ddd;font-size:0.65rem;"></i>{% endif %}{% endfor %}
+            </div>
+            {% endif %}
+            <div class="product-price">₹{{ rp.price }}</div>
+            <a href="/products/detail/{{ rp.id }}/" style="background:#f0f4ff;color:#0d1b3e;border:none;border-radius:8px;padding:7px;font-weight:700;font-size:0.8rem;text-decoration:none;display:block;text-align:center;transition:all 0.2s;" onmouseover="this.style.background='#0d1b3e';this.style.color='#f5a623'" onmouseout="this.style.background='#f0f4ff';this.style.color='#0d1b3e'">
+              <i class="bi bi-eye me-1"></i>View
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function changeQty(delta) {
+  var field = document.getElementById('qty-field');
+  if (!field) return;
+  var max = parseInt(field.getAttribute('max'));
+  var val = parseInt(field.value) + delta;
+  if (val < 1) val = 1;
+  if (val > max) val = max;
+  field.value = val;
+}
+
+function setMain(url, thumb) {
+  document.getElementById('mainImg').src = url;
+  document.querySelectorAll('.thumb').forEach(function(t){ t.classList.remove('active'); });
+  thumb.classList.add('active');
+}
+
+function selectVariant(btn, variantId, priceExtra, stock) {
+  document.querySelectorAll('.variant-btn').forEach(function(b){ b.classList.remove('selected'); });
+  btn.classList.add('selected');
+  document.getElementById('selectedVariant').value = variantId;
+  var field = document.getElementById('qty-field');
+  if (field && stock > 0) { field.setAttribute('max', stock); }
+}
+
+// Star rating
+const stars = document.querySelectorAll('.star');
+const ratingInput = document.getElementById('ratingInput');
+if (stars.length && ratingInput) {
+  stars.forEach(function(star) {
+    star.addEventListener('mouseenter', function() {
+      var val = parseInt(this.dataset.value);
+      stars.forEach(function(s){ s.classList.toggle('filled', parseInt(s.dataset.value) <= val); });
+    });
+    star.addEventListener('mouseleave', function() {
+      var cur = parseInt(ratingInput.value) || 0;
+      stars.forEach(function(s){ s.classList.toggle('filled', parseInt(s.dataset.value) <= cur); });
+    });
+    star.addEventListener('click', function() {
+      ratingInput.value = this.dataset.value;
+      stars.forEach(function(s){ s.classList.toggle('filled', parseInt(s.dataset.value) <= parseInt(ratingInput.value)); });
+    });
+  });
+}
+</script>
+{% endblock %}

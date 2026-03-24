@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% block title %}My Dashboard - ShopEase{% endblock %}
+{% block extra_css %}
+<style>
+  .dash-header { background: linear-gradient(135deg, #0d1b3e, #162447); padding: 40px 0; color: white; }
+  .dash-header h1 { font-weight: 800; font-size: 1.8rem; }
+  .stat-card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.07); text-align: center; transition: all 0.2s; }
+  .stat-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(0,0,0,0.12); }
+  .stat-icon { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 14px; }
+  .stat-number { font-size: 2rem; font-weight: 900; color: #0d1b3e; }
+  .stat-label { font-size: 0.85rem; color: #888; font-weight: 600; margin-top: 4px; }
+  .quick-card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.07); display: flex; align-items: center; gap: 18px; text-decoration: none; transition: all 0.2s; color: inherit; }
+  .quick-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(0,0,0,0.12); color: inherit; }
+  .quick-icon { width: 50px; height: 50px; background: #f0f4ff; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+  .quick-title { font-weight: 700; color: #0d1b3e; font-size: 0.95rem; }
+  .quick-sub { font-size: 0.8rem; color: #888; }
+  .order-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #f0f0f0; flex-wrap: wrap; gap: 8px; }
+  .order-row:last-child { border-bottom: none; }
+  .badge-status { font-size: 0.78rem; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
+  .section-card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.07); margin-bottom: 20px; }
+  .section-card h5 { font-weight: 800; color: #0d1b3e; padding-bottom: 12px; border-bottom: 3px solid #f5a623; display: inline-block; margin-bottom: 20px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-header">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <h1><i class="bi bi-person-circle me-2" style="color:#f5a623;"></i>Welcome, {{ name }}!</h1>
+        <p class="mb-0 text-white-50">Happy Shopping on ShopEase</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="container py-4">
+
+  <!-- Stats Row -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#e8f5e9;"><i class="bi bi-bag-check-fill" style="color:#28a745;"></i></div>
+        <div class="stat-number">{{ total_orders }}</div>
+        <div class="stat-label">Total Orders</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fff3e0;"><i class="bi bi-clock-fill" style="color:#f5a623;"></i></div>
+        <div class="stat-number">{{ pending_orders }}</div>
+        <div class="stat-label">Pending Orders</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fce4ec;"><i class="bi bi-heart-fill" style="color:#dc3545;"></i></div>
+        <div class="stat-number">{{ wishlist_count }}</div>
+        <div class="stat-label">Wishlist Items</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#e3f2fd;"><i class="bi bi-star-fill" style="color:#2196f3;"></i></div>
+        <div class="stat-number">{{ reviews_count }}</div>
+        <div class="stat-label">Reviews Given</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#e8f5e9;"><i class="bi bi-bag-check-fill" style="color:#28a745;"></i></div>
+        <div class="stat-number">{{ delivered_orders }}</div>
+        <div class="stat-label">Delivered</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fce4ec;"><i class="bi bi-currency-rupee" style="color:#e91e63;"></i></div>
+        <div class="stat-number" style="font-size:1.4rem;">₹{{ total_spent|floatformat:0 }}</div>
+        <div class="stat-label">Total Spent</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Links -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+      <a href="/products/" class="quick-card">
+        <div class="quick-icon"><i class="bi bi-shop" style="color:#0d1b3e;"></i></div>
+        <div><div class="quick-title">Browse Shop</div><div class="quick-sub">Explore products</div></div>
+      </a>
+    </div>
+    <div class="col-md-3 col-6">
+      <a href="/cart/" class="quick-card">
+        <div class="quick-icon"><i class="bi bi-cart3" style="color:#f5a623;"></i></div>
+        <div><div class="quick-title">My Cart</div><div class="quick-sub">{{ cart_count }} item{% if cart_count != 1 %}s{% endif %}</div></div>
+      </a>
+    </div>
+    <div class="col-md-3 col-6">
+      <a href="/cart/my-orders/" class="quick-card">
+        <div class="quick-icon"><i class="bi bi-bag" style="color:#28a745;"></i></div>
+        <div><div class="quick-title">My Orders</div><div class="quick-sub">Track deliveries</div></div>
+      </a>
+    </div>
+    <div class="col-md-3 col-6">
+      <a href="/products/wishlist/" class="quick-card">
+        <div class="quick-icon"><i class="bi bi-heart-fill" style="color:#dc3545;"></i></div>
+        <div><div class="quick-title">Wishlist</div><div class="quick-sub">Saved products</div></div>
+      </a>
+    </div>
+    <div class="col-md-3 col-6">
+      <a href="/accounts/profile/" class="quick-card">
+        <div class="quick-icon"><i class="bi bi-pencil-fill" style="color:#6f42c1;"></i></div>
+        <div><div class="quick-title">Edit Profile</div><div class="quick-sub">Name & phone</div></div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Recent Orders -->
+  <div class="section-card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-0"><i class="bi bi-bag-check me-2"></i>Recent Orders</h5>
+      <a href="/cart/my-orders/" style="color:#f5a623;font-weight:700;text-decoration:none;font-size:0.9rem;">View All <i class="bi bi-arrow-right"></i></a>
+    </div>
+    {% if recent_orders %}
+      {% for order in recent_orders %}
+      <div class="order-row">
+        <div>
+          <div style="font-weight:700;color:#0d1b3e;font-size:0.95rem;">Order #{{ order.id }}</div>
+          <div style="font-size:0.82rem;color:#888;">{{ order.created_at|date:"d M Y" }} &bull; {{ order.items.count }} item{% if order.items.count != 1 %}s{% endif %}</div>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <div style="font-weight:800;color:#0d1b3e;">₹{{ order.total }}</div>
+          {% if order.status == 'pending' %}<span class="badge-status bg-warning text-dark">Pending</span>
+          {% elif order.status == 'confirmed' %}<span class="badge-status bg-primary text-white">Confirmed</span>
+          {% elif order.status == 'shipped' %}<span class="badge-status bg-info text-dark">Shipped</span>
+          {% elif order.status == 'delivered' %}<span class="badge-status bg-success text-white">Delivered</span>
+          {% elif order.status == 'cancelled' %}<span class="badge-status bg-danger text-white">Cancelled</span>
+          {% else %}<span class="badge-status bg-secondary text-white">{{ order.status|title }}</span>{% endif %}
+          <a href="/cart/my-orders/{{ order.id }}/" style="color:#0d1b3e;font-size:0.85rem;font-weight:700;text-decoration:none;"><i class="bi bi-eye"></i></a>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="text-center py-4" style="color:#bbb;">
+        <i class="bi bi-bag" style="font-size:3rem;"></i>
+        <p class="mt-2" style="font-size:0.9rem;">No orders yet. <a href="/products/" style="color:#f5a623;font-weight:700;">Start shopping!</a></p>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

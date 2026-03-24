@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% block title %}Shop All Products — ShopEase | Best Prices in India{% endblock %}
+{% block meta_description %}Browse thousands of products on ShopEase. Electronics, fashion, home goods & more. Filter by category. Free delivery above ₹499. COD available.{% endblock %}
+{% block meta_keywords %}shop online india, buy products, shopease store, best deals india, online shopping{% endblock %}
+{% block extra_css %}
+<style>
+  .shop-header { background: linear-gradient(135deg, #0d1b3e, #162447); padding: 40px 0; color: white; }
+  .shop-header h1 { font-weight: 800; }
+  .filter-sidebar { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); position: sticky; top: 90px; }
+  .filter-title { font-weight: 800; color: #0d1b3e; font-size: 1.1rem; padding-bottom: 12px; border-bottom: 3px solid #f5a623; margin-bottom: 20px; }
+  .filter-category-item { display: flex; align-items: center; padding: 10px 12px; border-radius: 8px; text-decoration: none; color: #444; font-size: 0.9rem; font-weight: 500; transition: all 0.2s; margin-bottom: 4px; }
+  .filter-category-item:hover, .filter-category-item.active { background: #f0f4ff; color: #0d1b3e; font-weight: 700; }
+  .filter-category-item.active { border-left: 4px solid #f5a623; padding-left: 8px; }
+  .filter-category-item i { margin-right: 8px; color: #f5a623; }
+  .search-results-bar { background: #fff3cd; border-radius: 10px; padding: 10px 16px; margin-bottom: 20px; font-size: 0.9rem; color: #856404; display: flex; align-items: center; justify-content: space-between; }
+  .product-card { background: #fff; border-radius: 16px; overflow: hidden; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.08); height: 100%; display: flex; flex-direction: column; }
+  .product-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.12); }
+  .product-img-wrap { height: 200px; background: #f0f4ff; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; }
+  .product-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+  .product-card:hover .product-img-wrap img { transform: scale(1.05); }
+  .product-no-img { font-size: 4rem; color: #c0cce0; }
+  .product-badge { position: absolute; top: 10px; left: 10px; background: #0d1b3e; color: #f5a623; font-size: 0.7rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+  .product-body { padding: 18px; flex: 1; display: flex; flex-direction: column; }
+  .product-category-tag { font-size: 0.75rem; color: #f5a623; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .product-name { font-weight: 700; color: #0d1b3e; font-size: 0.95rem; margin-bottom: 8px; }
+  .product-price { font-size: 1.2rem; font-weight: 900; color: #0d1b3e; margin-bottom: 12px; }
+  .btn-add-cart { background: #0d1b3e; color: #f5a623; border: none; border-radius: 8px; padding: 9px; font-weight: 700; font-size: 0.88rem; width: 100%; transition: all 0.25s; cursor: pointer; margin-top: auto; }
+  .btn-add-cart:hover { background: #f5a623; color: #0d1b3e; }
+  .btn-view-detail { background: transparent; color: #0d1b3e; border: 2px solid #0d1b3e; border-radius: 8px; padding: 7px; font-weight: 700; font-size: 0.85rem; width: 100%; text-decoration: none; display: block; text-align: center; transition: all 0.25s; margin-bottom: 8px; }
+  .btn-view-detail:hover { background: #0d1b3e; color: #f5a623; }
+  .sort-bar { background: #fff; border-radius: 10px; padding: 12px 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  .sort-select { border: 1.5px solid #dee2e6; border-radius: 8px; padding: 6px 12px; font-size: 0.85rem; color: #0d1b3e; font-weight: 600; background: #f8f9fa; cursor: pointer; }
+  .pagination-wrap { display: flex; gap: 6px; justify-content: center; margin-top: 30px; flex-wrap: wrap; }
+  .page-btn { padding: 8px 14px; border-radius: 8px; border: 1.5px solid #dee2e6; background: #fff; color: #0d1b3e; font-weight: 600; font-size: 0.85rem; text-decoration: none; transition: all 0.2s; }
+  .page-btn:hover, .page-btn.active { background: #0d1b3e; color: #f5a623; border-color: #0d1b3e; }
+  .results-count { color: #666; font-size: 0.9rem; }
+  .results-count strong { color: #0d1b3e; }
+  .no-products { text-align: center; padding: 60px 20px; color: #aaa; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="shop-header">
+  <div class="container">
+    <h1><i class="bi bi-shop me-2"></i>Shop All Products</h1>
+    <nav aria-label="breadcrumb" class="mt-2">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="/" style="color:#f5a623">Home</a></li>
+        <li class="breadcrumb-item active text-white">Shop</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+<div class="container py-5">
+  <div class="row g-4">
+    <div class="col-lg-3">
+      <div class="filter-sidebar">
+        <div class="filter-title"><i class="bi bi-funnel-fill me-2"></i>Filter</div>
+        <form action="/products/" method="GET" class="mb-4">
+          <div class="input-group">
+            <input type="text" name="search" class="form-control" placeholder="Search..." value="{{ search_query }}" style="border-radius:8px 0 0 8px; border:2px solid #e0e7ff; font-size:0.85rem;">
+            <button type="submit" style="background:#f5a623; border:none; border-radius:0 8px 8px 0; padding:0 12px;"><i class="bi bi-search"></i></button>
+          </div>
+          {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
+        </form>
+        <p style="font-size:0.8rem; font-weight:700; color:#999; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">Categories</p>
+        <a href="/products/" class="filter-category-item {% if not selected_category %}active{% endif %}"><i class="bi bi-grid-fill"></i> All Products</a>
+        {% for cat in categories %}
+        <a href="/products/?category={{ cat.id }}{% if search_query %}&search={{ search_query }}{% endif %}" class="filter-category-item {% if selected_category == cat.id|stringformat:'s' %}active{% endif %}"><i class="bi bi-tag-fill"></i> {{ cat.name }}</a>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="col-lg-9">
+      <div class="sort-bar">
+        <span class="results-count">Showing <strong>{{ total_count }}</strong> product{% if total_count != 1 %}s{% endif %}{% if search_query %} for "<strong>{{ search_query }}</strong>"{% endif %}{% if selected_category_name %} in <strong>{{ selected_category_name }}</strong>{% endif %}</span>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          {% if search_query or selected_category %}<a href="/products/" style="color:#dc3545;font-size:0.85rem;text-decoration:none;"><i class="bi bi-x-circle"></i> Clear</a>{% endif %}
+          <form method="GET" action="/products/" style="display:inline;">
+            {% if search_query %}<input type="hidden" name="search" value="{{ search_query }}">{% endif %}
+            {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
+            <select name="sort" class="sort-select" onchange="this.form.submit()">
+              <option value="" {% if not sort_by %}selected{% endif %}>Newest First</option>
+              <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+              <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+              <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name A-Z</option>
+            </select>
+          </form>
+        </div>
+      </div>
+      {% if search_query %}
+      <div class="search-results-bar"><span><i class="bi bi-search me-2"></i>Search results for: <strong>"{{ search_query }}"</strong></span></div>
+      {% endif %}
+      {% if products %}
+      <div class="row g-4">
+        {% for product in products %}
+        <div class="col-6 col-md-4">
+          <div class="product-card" style="cursor:pointer;" onclick="window.location='/products/detail/{{ product.id }}/'">
+            <div class="product-img-wrap">
+              {% if product.image_url %}<img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">{% else %}<i class="bi bi-image product-no-img"></i>{% endif %}
+              {% if product.stock <= 5 and product.stock > 0 %}<span class="product-badge">Only {{ product.stock }} left!</span>{% endif %}
+              <!-- Wishlist heart -->
+              {% if request.session.user_role == 'customer' %}
+              <form action="/products/wishlist/toggle/{{ product.id }}/" method="POST" style="position:absolute;top:10px;right:10px;margin:0;">
+                {% csrf_token %}
+                <button type="submit" style="background:rgba(255,255,255,0.9);border:none;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.15);transition:all 0.2s;">
+                  <i class="bi bi-heart{% if product.id in wishlist_ids %}-fill{% endif %}" style="color:#dc3545;font-size:1rem;"></i>
+                </button>
+              </form>
+              {% endif %}
+            </div>
+            <div class="product-body">
+              {% if product.category %}<div class="product-category-tag">{{ product.category.name }}</div>{% endif %}
+              <div class="product-name">{{ product.name }}</div>
+              {% if product.rev_count|default:0 > 0 %}
+              <div class="d-flex align-items-center gap-1 mb-2">
+                {% for i in "12345" %}{% if forloop.counter <= product.avg_r|default:0 %}<i class="bi bi-star-fill" style="color:#f5a623;font-size:0.72rem;"></i>{% else %}<i class="bi bi-star" style="color:#ddd;font-size:0.72rem;"></i>{% endif %}{% endfor %}
+                <span style="font-size:0.75rem;color:#888;">({{ product.rev_count|default:0 }})</span>
+              </div>
+              {% endif %}
+              <div class="product-price">₹{{ product.price }}</div>
+              <a href="/products/detail/{{ product.id }}/" class="btn-view-detail"><i class="bi bi-eye me-1"></i>View Details</a>
+              {% if product.stock > 0 %}
+                {% if request.session.user_role == 'customer' or not request.session.user_id %}
+                <form action="/cart/add/{{ product.id }}/" method="POST">
+                  {% csrf_token %}
+                  <input type="hidden" name="quantity" value="1">
+                  <button type="submit" class="btn-add-cart"><i class="bi bi-cart-plus me-1"></i>Add to Cart</button>
+                </form>
+                {% endif %}
+              {% else %}
+              <button class="btn-add-cart" disabled style="opacity:0.5">Out of Stock</button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <!-- Pagination -->
+      {% if products.has_other_pages %}
+      <div class="pagination-wrap">
+        {% if products.has_previous %}
+        <a href="?page={{ products.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="page-btn"><i class="bi bi-chevron-left"></i></a>
+        {% endif %}
+        {% for num in products.paginator.page_range %}
+          {% if products.number == num %}
+            <span class="page-btn active">{{ num }}</span>
+          {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+            <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="page-btn">{{ num }}</a>
+          {% endif %}
+        {% endfor %}
+        {% if products.has_next %}
+        <a href="?page={{ products.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="page-btn"><i class="bi bi-chevron-right"></i></a>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% else %}
+      <div class="no-products">
+        <i class="bi bi-search" style="font-size:4rem; color:#ccc"></i>
+        <h4 class="mt-3">No products found</h4>
+        <p>Try different search terms or browse all categories.</p>
+        <a href="/products/" class="btn-add-cart d-inline-block mt-2" style="width:auto; padding:10px 24px;">Browse All</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

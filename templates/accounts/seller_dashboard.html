@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Seller Dashboard{% endblock %}
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 text-center">
+      <h2 style="color:#0d1b3e; font-weight:900;">Welcome, {{ name }}! 🏪</h2>
+      <p class="text-muted mb-4">You are logged in as Seller</p>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="card p-3 text-center shadow-sm">
+            <i class="bi bi-box-seam" style="font-size:2rem; color:#f5a623;"></i>
+            <h6 class="mt-2 fw-bold">My Products</h6>
+            <a href="/seller/products/" class="btn btn-warning btn-sm mt-2">Manage</a>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card p-3 text-center shadow-sm">
+            <i class="bi bi-bag-check" style="font-size:2rem; color:#0d1b3e;"></i>
+            <h6 class="mt-2 fw-bold">My Orders</h6>
+            <a href="/seller/orders/" class="btn btn-primary btn-sm mt-2">View</a>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card p-3 text-center shadow-sm">
+            <i class="bi bi-speedometer2" style="font-size:2rem; color:#28a745;"></i>
+            <h6 class="mt-2 fw-bold">Full Dashboard</h6>
+            <a href="/seller/dashboard/" class="btn btn-success btn-sm mt-2">Open</a>
+          </div>
+        </div>
+      </div>
+      <a href="/accounts/logout/" class="btn btn-danger mt-4">
+        <i class="bi bi-box-arrow-right me-2"></i>Logout
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

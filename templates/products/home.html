@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% block title %}ShopEase — Shop Online India | Free Delivery Above ₹499{% endblock %}
+{% block meta_description %}ShopEase is India's trusted online store. Buy electronics, fashion, home essentials & more. Free shipping above ₹499. COD available. Shop now!{% endblock %}
+{% block meta_keywords %}online shopping india, buy online, shopease, free delivery india, COD shopping, best prices online{% endblock %}
+{% block extra_css %}
+<style>
+  .hero-section { background: linear-gradient(135deg, #0d1b3e 0%, #162447 50%, #1a3a6e 100%); padding: 80px 0; position: relative; overflow: hidden; }
+  .hero-section::before { content: ''; position: absolute; top: -50%; right: -10%; width: 500px; height: 500px; background: radial-gradient(circle, rgba(245,166,35,0.15) 0%, transparent 70%); border-radius: 50%; }
+  .hero-title { font-size: 3rem; font-weight: 900; color: #fff; line-height: 1.2; }
+  .hero-title span { color: #f5a623; }
+  .hero-subtitle { color: rgba(255,255,255,0.75); font-size: 1.1rem; margin: 20px 0 30px; }
+  .btn-hero-primary { background: #f5a623; color: #0d1b3e; border: none; padding: 14px 32px; border-radius: 10px; font-weight: 800; font-size: 1rem; text-decoration: none; display: inline-block; transition: all 0.25s; margin-right: 12px; }
+  .btn-hero-primary:hover { background: #e09415; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(245,166,35,0.4); color: #0d1b3e; }
+  .btn-hero-secondary { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,0.5); padding: 12px 30px; border-radius: 10px; font-weight: 700; font-size: 1rem; text-decoration: none; display: inline-block; transition: all 0.25s; }
+  .btn-hero-secondary:hover { border-color: #f5a623; color: #f5a623; }
+  .hero-stats { display: flex; gap: 40px; margin-top: 40px; }
+  .hero-stat-item { text-align: center; }
+  .hero-stat-number { font-size: 1.8rem; font-weight: 900; color: #f5a623; }
+  .hero-stat-label { font-size: 0.8rem; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px; }
+  .hero-image-area { display: flex; align-items: center; justify-content: center; font-size: 12rem; opacity: 0.15; color: #f5a623; }
+  .section-title { font-size: 1.8rem; font-weight: 800; color: #0d1b3e; position: relative; padding-bottom: 12px; margin-bottom: 30px; }
+  .section-title::after { content: ''; position: absolute; bottom: 0; left: 0; width: 50px; height: 4px; background: #f5a623; border-radius: 2px; }
+  .section-title.text-center::after { left: 50%; transform: translateX(-50%); }
+  .category-card { background: #fff; border-radius: 16px; overflow: hidden; text-decoration: none; display: block; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.08); text-align: center; padding: 30px 20px; }
+  .category-card:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(0,0,0,0.15); }
+  .category-icon { width: 80px; height: 80px; background: linear-gradient(135deg, #0d1b3e, #162447); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 2rem; color: #f5a623; overflow: hidden; }
+  .category-icon img { width: 100%; height: 100%; object-fit: cover; }
+  .category-name { font-weight: 700; color: #0d1b3e; font-size: 0.95rem; }
+  .product-card { background: #fff; border-radius: 16px; overflow: hidden; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.08); height: 100%; display: flex; flex-direction: column; }
+  .product-card:hover { transform: translateY(-6px); box-shadow: 0 15px 35px rgba(0,0,0,0.15); }
+  .product-img-wrap { height: 200px; background: #f0f4ff; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; }
+  .product-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+  .product-card:hover .product-img-wrap img { transform: scale(1.05); }
+  .product-no-img { font-size: 4rem; color: #c0cce0; }
+  .product-badge { position: absolute; top: 10px; left: 10px; background: #0d1b3e; color: #f5a623; font-size: 0.7rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+  .product-body { padding: 18px; flex: 1; display: flex; flex-direction: column; }
+  .product-category-tag { font-size: 0.75rem; color: #f5a623; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .product-name { font-weight: 700; color: #0d1b3e; font-size: 1rem; margin-bottom: 8px; line-height: 1.4; }
+  .product-price { font-size: 1.3rem; font-weight: 900; color: #0d1b3e; margin-bottom: 15px; }
+  .btn-add-cart { background: #0d1b3e; color: #f5a623; border: none; border-radius: 8px; padding: 10px; font-weight: 700; font-size: 0.9rem; width: 100%; transition: all 0.25s; cursor: pointer; margin-top: auto; }
+  .btn-add-cart:hover { background: #f5a623; color: #0d1b3e; transform: translateY(-1px); }
+  .stock-low { font-size: 0.75rem; color: #dc3545; font-weight: 600; margin-bottom: 8px; }
+  .promo-banner { background: linear-gradient(135deg, #f5a623, #e09415); border-radius: 20px; padding: 50px 40px; position: relative; overflow: hidden; }
+  .promo-banner::after { content: ''; position: absolute; right: -30px; top: -30px; width: 200px; height: 200px; background: rgba(255,255,255,0.1); border-radius: 50%; }
+  .promo-banner h2 { font-size: 2rem; font-weight: 900; color: #0d1b3e; }
+  .promo-banner p { color: rgba(13,27,62,0.8); }
+  .btn-promo { background: #0d1b3e; color: #f5a623; border: none; padding: 12px 28px; border-radius: 10px; font-weight: 800; text-decoration: none; display: inline-block; transition: all 0.25s; }
+  .btn-promo:hover { background: #162447; color: #f5a623; transform: translateY(-2px); }
+</style>
+{% endblock %}
+{% block content %}
+<section class="hero-section">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-7">
+        <h1 class="hero-title">Shop Smarter,<br>Live <span>Better</span></h1>
+        <p class="hero-subtitle">Discover thousands of products from trusted sellers.<br>Best prices, fast delivery, easy returns.</p>
+        <div>
+          <a href="/products/" class="btn-hero-primary"><i class="bi bi-shop me-2"></i>Shop Now</a>
+          <a href="#categories" class="btn-hero-secondary">Browse Categories</a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat-item"><div class="hero-stat-number">{{ total_products }}+</div><div class="hero-stat-label">Products</div></div>
+          <div class="hero-stat-item"><div class="hero-stat-number">{{ total_sellers }}+</div><div class="hero-stat-label">Sellers</div></div>
+          <div class="hero-stat-item"><div class="hero-stat-number">{{ total_customers }}+</div><div class="hero-stat-label">Customers</div></div>
+        </div>
+      </div>
+      <div class="col-lg-5 d-none d-lg-block"><div class="hero-image-area"><i class="bi bi-bag-heart-fill"></i></div></div>
+    </div>
+  </div>
+</section>
+<section class="py-5" id="categories">
+  <div class="container">
+    <h2 class="section-title text-center">Shop by Category</h2>
+    {% if categories %}
+    <div class="row g-3">
+      {% for cat in categories %}
+      <div class="col-6 col-md-3 col-lg-2">
+        <a href="/products/?category={{ cat.id }}" class="category-card">
+          <div class="category-icon">{% if cat.image_url %}<img src="{{ cat.image_url }}" alt="{{ cat.name }}" loading="lazy">{% else %}<i class="bi bi-grid-fill"></i>{% endif %}</div>
+          <div class="category-name">{{ cat.name }}</div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5 text-muted"><i class="bi bi-grid" style="font-size:3rem"></i><p class="mt-3">No categories yet.</p></div>
+    {% endif %}
+  </div>
+</section>
+<section class="py-4">
+  <div class="container">
+    <div class="promo-banner">
+      <div class="row align-items-center">
+        <div class="col-md-8"><h2>🔥 Special Offers Just for You!</h2><p class="mb-0 mt-2">Explore our latest deals and save big on top products.</p></div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0"><a href="/products/" class="btn-promo"><i class="bi bi-lightning-fill me-1"></i>View Deals</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="section-title mb-0">Featured Products</h2>
+      <a href="/products/" style="color:#f5a623; font-weight:700; text-decoration:none;">View All <i class="bi bi-arrow-right"></i></a>
+    </div>
+    {% if products %}
+    <div class="row g-4">
+      {% for product in products %}
+      <div class="col-6 col-md-4 col-lg-3">
+        <div class="product-card" style="cursor:pointer;" onclick="window.location='/products/detail/{{ product.id }}/'">
+          <div class="product-img-wrap">
+            {% if product.image_url %}<img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">{% else %}<i class="bi bi-image product-no-img"></i>{% endif %}
+            {% if product.stock <= 5 and product.stock > 0 %}<span class="product-badge">Only {{ product.stock }} left!</span>{% endif %}
+          </div>
+          <div class="product-body">
+            {% if product.category %}<div class="product-category-tag">{{ product.category.name }}</div>{% endif %}
+            <div class="product-name">{{ product.name }}</div>
+            {% if product.stock == 0 %}<div class="stock-low">Out of Stock</div>{% endif %}
+            <div class="product-price">₹{{ product.price }}</div>
+            {% if product.stock > 0 %}
+              {% if request.session.user_role == 'customer' or not request.session.user_id %}
+              <form action="/cart/add/{{ product.id }}/" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" class="btn-add-cart"><i class="bi bi-cart-plus me-1"></i>Add to Cart</button>
+              </form>
+              {% else %}
+              <a href="/products/detail/{{ product.id }}/" class="btn-add-cart" style="text-decoration:none;display:block;text-align:center;"><i class="bi bi-eye me-1"></i>View Product</a>
+              {% endif %}
+            {% else %}
+            <button class="btn-add-cart" disabled style="opacity:0.5; cursor:not-allowed;">Out of Stock</button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-box-seam" style="font-size:4rem"></i>
+      <h4 class="mt-3">No products yet</h4>
+      <p>Products will appear here once sellers add them.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

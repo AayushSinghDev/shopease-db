@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}Manage Sellers — Admin{% endblock %}
+{% block extra_css %}
+<style>
+  .ap-header{background:linear-gradient(135deg,#0d1b3e,#162447);padding:40px 0;color:#fff}
+  .ap-header h1{font-weight:800}
+  .ap-nav{background:#fff;border-bottom:2px solid #f0f0f0;padding:0}
+  .ap-nav a{color:#555;font-weight:600;padding:14px 20px;font-size:.9rem;border-bottom:3px solid transparent;display:inline-block;text-decoration:none}
+  .ap-nav a:hover{color:#0d1b3e}
+  .ap-nav a.active{color:#0d1b3e;border-bottom-color:#f5a623}
+  .stat-card{background:#fff;border-radius:14px;padding:20px 24px;box-shadow:0 4px 15px rgba(0,0,0,.06);display:flex;align-items:center;gap:16px}
+  .stat-icon{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+  .stat-num{font-size:1.6rem;font-weight:800;color:#0d1b3e}
+  .stat-lbl{font-size:.8rem;color:#888}
+  .tbl-card{background:#fff;border-radius:16px;box-shadow:0 4px 15px rgba(0,0,0,.06);overflow:hidden}
+  .tbl-card thead th{background:#0d1b3e;color:#f5a623;font-weight:700;font-size:.85rem;padding:14px 16px;border:none}
+  .tbl-card tbody td{padding:14px 16px;vertical-align:middle;font-size:.9rem;border-color:#f5f5f5}
+  .tbl-card tbody tr:hover{background:#fafafa}
+  .badge-ok{background:#d4edda;color:#155724;padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:700}
+  .badge-pend{background:#fff3cd;color:#856404;padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:700}
+  .btn-ok{background:#28a745;color:#fff;border:none;border-radius:7px;padding:5px 12px;font-size:.8rem;font-weight:700;cursor:pointer}
+  .btn-ok:hover{background:#218838}
+  .btn-rev{background:#ffc107;color:#0d1b3e;border:none;border-radius:7px;padding:5px 12px;font-size:.8rem;font-weight:700;cursor:pointer}
+  .btn-rev:hover{background:#e0a800}
+  .btn-del{background:#dc3545;color:#fff;border:none;border-radius:7px;padding:5px 12px;font-size:.8rem;font-weight:700;cursor:pointer}
+  .btn-del:hover{background:#c82333}
+</style>
+{% endblock %}
+{% block content %}
+<div class="ap-header"><div class="container">
+  <h1><i class="bi bi-shield-lock-fill me-2"></i>Admin Panel</h1>
+  <p class="mb-0 text-white-50">Welcome, {{ request.session.user_name }}</p>
+</div></div>
+<div class="ap-nav"><div class="container">
+  <a href="/accounts/dashboard/admin/"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+  <a href="/admin-panel/sellers/"   class="active"><i class="bi bi-shop me-1"></i>Sellers</a>
+  <a href="/admin-panel/customers/"><i class="bi bi-people me-1"></i>Customers</a>
+  <a href="/admin-panel/products/"><i class="bi bi-box-seam me-1"></i>Products</a>
+  <a href="/admin-panel/orders/"><i class="bi bi-bag-check me-1"></i>Orders</a>
+  <a href="/admin-panel/categories/"><i class="bi bi-grid me-1"></i>Categories</a>
+  <a href="/admin-panel/revenue/"><i class="bi bi-bar-chart me-1"></i>Revenue</a>
+  <a href="/admin-panel/reviews/"><i class="bi bi-star-half me-1"></i>Reviews</a>
+</div></div>
+<div class="container py-4">
+  <div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="stat-card">
+      <div class="stat-icon" style="background:#e8f5e9"><i class="bi bi-check-circle-fill" style="color:#28a745"></i></div>
+      <div><div class="stat-num">{{ approved_count }}</div><div class="stat-lbl">Approved Sellers</div></div>
+    </div></div>
+    <div class="col-md-4"><div class="stat-card">
+      <div class="stat-icon" style="background:#fff3cd"><i class="bi bi-clock-fill" style="color:#ffc107"></i></div>
+      <div><div class="stat-num">{{ pending_count }}</div><div class="stat-lbl">Pending Approval</div></div>
+    </div></div>
+    <div class="col-md-4"><div class="stat-card">
+      <div class="stat-icon" style="background:#e3f2fd"><i class="bi bi-person-badge-fill" style="color:#1565c0"></i></div>
+      <div><div class="stat-num">{{ sellers|length }}</div><div class="stat-lbl">Total Sellers</div></div>
+    </div></div>
+  </div>
+  <div class="tbl-card">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for s in sellers %}
+        <tr>
+          <td style="color:#888">{{ forloop.counter }}</td>
+          <td style="font-weight:600">{{ s.name }}</td>
+          <td>{{ s.email }}</td>
+          <td>{{ s.phone }}</td>
+          <td>{% if s.is_approved %}<span class="badge-ok"><i class="bi bi-check-circle me-1"></i>Approved</span>{% else %}<span class="badge-pend"><i class="bi bi-clock me-1"></i>Pending</span>{% endif %}</td>
+          <td>
+            <div class="d-flex gap-2 flex-wrap">
+              {% if not s.is_approved %}
+              <form method="POST" style="display:inline">{% csrf_token %}<input type="hidden" name="seller_id" value="{{ s.id }}"><input type="hidden" name="action" value="approve"><button type="submit" class="btn-ok"><i class="bi bi-check-lg me-1"></i>Approve</button></form>
+              {% else %}
+              <form method="POST" style="display:inline">{% csrf_token %}<input type="hidden" name="seller_id" value="{{ s.id }}"><input type="hidden" name="action" value="reject"><button type="submit" class="btn-rev"><i class="bi bi-x-lg me-1"></i>Revoke</button></form>
+              {% endif %}
+<a href="/admin-panel/sellers/{{ s.id }}/" style="background:#0d1b3e;color:#f5a623;border:none;border-radius:7px;padding:5px 12px;font-size:.8rem;font-weight:700;text-decoration:none;display:inline-block;"><i class="bi bi-eye me-1"></i>View</a>
+              <form method="POST" style="display:inline" onsubmit="return confirm('Delete {{ s.name }}?')">{% csrf_token %}<input type="hidden" name="seller_id" value="{{ s.id }}"><input type="hidden" name="action" value="delete"><button type="submit" class="btn-del"><i class="bi bi-trash3 me-1"></i>Delete</button></form>
+            </div>
+          </td>
+        </tr>
+        {% empty %}<tr><td colspan="6" class="text-center text-muted py-4">No sellers yet.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

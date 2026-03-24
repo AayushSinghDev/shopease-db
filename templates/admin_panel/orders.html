@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Manage Orders — Admin{% endblock %}
+{% block extra_css %}
+<style>
+  .ap-header{background:linear-gradient(135deg,#0d1b3e,#162447);padding:40px 0;color:#fff}
+  .ap-header h1{font-weight:800}
+  .ap-nav{background:#fff;border-bottom:2px solid #f0f0f0;padding:0}
+  .ap-nav a{color:#555;font-weight:600;padding:14px 20px;font-size:.9rem;border-bottom:3px solid transparent;display:inline-block;text-decoration:none}
+  .ap-nav a:hover{color:#0d1b3e}
+  .ap-nav a.active{color:#0d1b3e;border-bottom-color:#f5a623}
+  .tbl-card{background:#fff;border-radius:16px;box-shadow:0 4px 15px rgba(0,0,0,.06);overflow:hidden}
+  .tbl-card thead th{background:#0d1b3e;color:#f5a623;font-weight:700;font-size:.85rem;padding:14px 16px;border:none}
+  .tbl-card tbody td{padding:12px 16px;vertical-align:middle;font-size:.9rem;border-color:#f5f5f5}
+  .tbl-card tbody tr:hover{background:#fafafa}
+  .count-badge{background:#0d1b3e;color:#f5a623;border-radius:20px;padding:4px 14px;font-size:.8rem;font-weight:700;margin-left:10px}
+  .s-pending{background:#fff3cd;color:#856404;padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:700}
+  .s-confirmed{background:#d1ecf1;color:#0c5460;padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:700}
+  .s-shipped{background:#e8d4f5;color:#4a235a;padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:700}
+  .s-delivered{background:#d4edda;color:#155724;padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:700}
+  .s-cancelled{background:#f8d7da;color:#721c24;padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:700}
+  .btn-update{background:#0d1b3e;color:#f5a623;border:none;border-radius:7px;padding:5px 12px;font-size:.8rem;font-weight:700;cursor:pointer}
+  .btn-update:hover{background:#162447}
+  select.status-sel{border:1.5px solid #dee2e6;border-radius:7px;padding:5px 10px;font-size:.85rem}
+</style>
+{% endblock %}
+{% block content %}
+<div class="ap-header"><div class="container">
+  <h1><i class="bi bi-shield-lock-fill me-2"></i>Admin Panel</h1>
+  <p class="mb-0 text-white-50">Welcome, {{ request.session.user_name }}</p>
+</div></div>
+<div class="ap-nav"><div class="container">
+  <a href="/accounts/dashboard/admin/"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+  <a href="/admin-panel/sellers/"><i class="bi bi-shop me-1"></i>Sellers</a>
+  <a href="/admin-panel/customers/"><i class="bi bi-people me-1"></i>Customers</a>
+  <a href="/admin-panel/products/"><i class="bi bi-box-seam me-1"></i>Products</a>
+  <a href="/admin-panel/orders/" class="active"><i class="bi bi-bag-check me-1"></i>Orders</a>
+
+  <a href="/admin-panel/categories/"><i class="bi bi-grid me-1"></i>Categories</a>
+  <a href="/admin-panel/revenue/"><i class="bi bi-bar-chart me-1"></i>Revenue</a>
+  <a href="/admin-panel/reviews/"><i class="bi bi-star-half me-1"></i>Reviews</a>
+</div></div>
+<div class="container py-4">
+  <div class="d-flex align-items-center mb-3">
+    <h4 style="font-weight:800;color:#0d1b3e;margin:0">All Orders</h4>
+    <span class="count-badge">{{ orders|length }} total</span>
+  </div>
+  <div class="tbl-card">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>#</th><th>Customer</th><th>Items</th><th>Total</th><th>Date</th><th>Status</th><th>Update</th></tr></thead>
+      <tbody>
+        {% for o in orders %}
+        <tr>
+          <td style="color:#888;font-weight:700">#{{ o.pk }}</td>
+          <td style="font-weight:600">{{ o.customer.name }}<br><span style="font-size:.8rem;color:#888">{{ o.customer.email }}</span></td>
+          <td style="font-size:.85rem">
+            {% for item in o.items.all %}
+              {{ item.product_name }} ×{{ item.quantity }}<br>
+            {% endfor %}
+          </td>
+          <td style="font-weight:800;color:#0d1b3e">₹{{ o.total }}</td>
+          <td style="font-size:.85rem;color:#888">{{ o.created_at|date:"d M Y" }}</td>
+          <td><span class="s-{{ o.status }}">{{ o.status|capfirst }}</span></td>
+          <td>
+            <form method="POST" style="display:flex;gap:6px;align-items:center">
+              {% csrf_token %}
+              <input type="hidden" name="order_id" value="{{ o.id }}">
+              <select name="status" class="status-sel">
+                <option value="pending"   {% if o.status == 'pending'   %}selected{% endif %}>Pending</option>
+                <option value="confirmed" {% if o.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                <option value="shipped"   {% if o.status == 'shipped'   %}selected{% endif %}>Shipped</option>
+                <option value="delivered" {% if o.status == 'delivered' %}selected{% endif %}>Delivered</option>
+                <option value="cancelled" {% if o.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+              </select>
+              <button type="submit" class="btn-update"><i class="bi bi-check-lg"></i></button>
+            </form>
+            <a href="/admin-panel/orders/{{ o.id }}/" style="background:#162447;color:#f5a623;border:none;border-radius:7px;padding:5px 10px;font-size:.78rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;margin-top:4px;"><i class="bi bi-eye me-1"></i>Detail</a>
+          </td>
+        </tr>
+        {% empty %}<tr><td colspan="7" class="text-center text-muted py-4">No orders yet.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

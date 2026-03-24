@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Categories - ShopEase{% endblock %}
+{% block extra_css %}
+<style>
+  .breadcrumb-bar { background: #0d1b3e; padding: 14px 0; }
+  .cat-card { background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); transition: all 0.3s; cursor: pointer; text-decoration: none; display: block; }
+  .cat-card:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(0,0,0,0.14); }
+  .cat-img { height: 160px; background: #f0f4ff; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .cat-img img { width: 100%; height: 100%; object-fit: cover; }
+  .cat-body { padding: 16px; text-align: center; }
+  .cat-name { font-weight: 800; color: #0d1b3e; font-size: 1rem; margin-bottom: 4px; }
+  .cat-count { font-size: 0.82rem; color: #888; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="breadcrumb-bar">
+  <div class="container">
+    <nav><ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a href="/" style="color:#f5a623">Home</a></li>
+      <li class="breadcrumb-item active text-white">Categories</li>
+    </ol></nav>
+  </div>
+</div>
+
+<div class="container py-5">
+  <h2 style="font-weight:900;color:#0d1b3e;margin-bottom:30px;"><i class="bi bi-grid-fill me-2" style="color:#f5a623;"></i>All Categories</h2>
+  {% if categories %}
+  <div class="row g-4">
+    {% for cat in categories %}
+    <div class="col-6 col-md-4 col-lg-3">
+      <a href="/products/?category={{ cat.id }}" class="cat-card">
+        <div class="cat-img">
+          {% if cat.image_url %}
+            <img src="{{ cat.image_url }}" alt="{{ cat.name }}">
+          {% else %}
+            <i class="bi bi-tag-fill" style="font-size:3.5rem; color:#c0cce0;"></i>
+          {% endif %}
+        </div>
+        <div class="cat-body">
+          <div class="cat-name">{{ cat.name }}</div>
+          <div class="cat-count">{{ cat.products.count }} products</div>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-5">
+    <i class="bi bi-tag" style="font-size:5rem; color:#ddd;"></i>
+    <h4 class="mt-3" style="color:#ccc;">No categories yet</h4>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

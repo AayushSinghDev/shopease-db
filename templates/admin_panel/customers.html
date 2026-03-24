@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Manage Customers — Admin{% endblock %}
+{% block extra_css %}
+<style>
+  .ap-header{background:linear-gradient(135deg,#0d1b3e,#162447);padding:40px 0;color:#fff}
+  .ap-header h1{font-weight:800}
+  .ap-nav{background:#fff;border-bottom:2px solid #f0f0f0;padding:0}
+  .ap-nav a{color:#555;font-weight:600;padding:14px 20px;font-size:.9rem;border-bottom:3px solid transparent;display:inline-block;text-decoration:none}
+  .ap-nav a:hover{color:#0d1b3e}
+  .ap-nav a.active{color:#0d1b3e;border-bottom-color:#f5a623}
+  .tbl-card{background:#fff;border-radius:16px;box-shadow:0 4px 15px rgba(0,0,0,.06);overflow:hidden}
+  .tbl-card thead th{background:#0d1b3e;color:#f5a623;font-weight:700;font-size:.85rem;padding:14px 16px;border:none}
+  .tbl-card tbody td{padding:14px 16px;vertical-align:middle;font-size:.9rem;border-color:#f5f5f5}
+  .tbl-card tbody tr:hover{background:#fafafa}
+  .btn-del{background:#dc3545;color:#fff;border:none;border-radius:7px;padding:5px 12px;font-size:.8rem;font-weight:700;cursor:pointer}
+  .btn-del:hover{background:#c82333}
+  .count-badge{background:#0d1b3e;color:#f5a623;border-radius:20px;padding:4px 14px;font-size:.8rem;font-weight:700;margin-left:10px}
+</style>
+{% endblock %}
+{% block content %}
+<div class="ap-header"><div class="container">
+  <h1><i class="bi bi-shield-lock-fill me-2"></i>Admin Panel</h1>
+  <p class="mb-0 text-white-50">Welcome, {{ request.session.user_name }}</p>
+</div></div>
+<div class="ap-nav"><div class="container">
+  <a href="/accounts/dashboard/admin/"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+  <a href="/admin-panel/sellers/"><i class="bi bi-shop me-1"></i>Sellers</a>
+  <a href="/admin-panel/customers/" class="active"><i class="bi bi-people me-1"></i>Customers</a>
+  <a href="/admin-panel/products/"><i class="bi bi-box-seam me-1"></i>Products</a>
+  <a href="/admin-panel/orders/"><i class="bi bi-bag-check me-1"></i>Orders</a>
+  <a href="/admin-panel/categories/"><i class="bi bi-grid me-1"></i>Categories</a>
+  <a href="/admin-panel/revenue/"><i class="bi bi-bar-chart me-1"></i>Revenue</a>
+  <a href="/admin-panel/reviews/"><i class="bi bi-star-half me-1"></i>Reviews</a>
+</div></div>
+<div class="container py-4">
+  <div class="d-flex align-items-center mb-3">
+    <h4 style="font-weight:800;color:#0d1b3e;margin:0">All Customers</h4>
+    <span class="count-badge">{{ customers|length }} total</span>
+  </div>
+  <div class="tbl-card">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Action</th></tr></thead>
+      <tbody>
+        {% for c in customers %}
+        <tr>
+          <td style="color:#888">{{ forloop.counter }}</td>
+          <td style="font-weight:600"><i class="bi bi-person-circle me-2" style="color:#0d1b3e"></i>{{ c.name }}</td>
+          <td>{{ c.email }}</td>
+          <td>{{ c.phone }}</td>
+          <td>
+            <div class="d-flex gap-2">
+              <a href="/admin-panel/customers/{{ c.id }}/" class="btn-del" style="background:#0d1b3e;text-decoration:none;padding:5px 12px;"><i class="bi bi-eye me-1"></i>View</a>
+              <form method="POST" style="display:inline" onsubmit="return confirm('Delete {{ c.name }}?')">
+                {% csrf_token %}<input type="hidden" name="customer_id" value="{{ c.id }}">
+                <button type="submit" class="btn-del"><i class="bi bi-trash3 me-1"></i>Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% empty %}<tr><td colspan="5" class="text-center text-muted py-4">No customers yet.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+{% block title %}Edit Product — Seller Panel{% endblock %}
+{% block extra_css %}
+<style>
+  .seller-layout{display:flex;min-height:calc(100vh - 70px);}
+  .sidebar{width:230px;background:#0d1b3e;padding:24px 0;flex-shrink:0;}
+  .sidebar-brand{color:#f5a623;font-weight:800;font-size:1rem;padding:0 20px 20px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .sidebar-user{color:rgba(255,255,255,0.6);font-size:0.82rem;padding:8px 20px 16px;display:flex;align-items:center;gap:8px;}
+  .sidebar-link{display:flex;align-items:center;gap:10px;padding:12px 20px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.88rem;font-weight:500;transition:all 0.2s;}
+  .sidebar-link:hover,.sidebar-link.active{background:rgba(245,166,35,0.15);color:#f5a623;border-left:3px solid #f5a623;}
+  .sidebar-link.logout{color:#ff6b6b;}
+  .seller-content{flex:1;padding:30px;background:#f8f9fa;overflow-y:auto;}
+  .form-card{background:#fff;border-radius:16px;padding:28px;box-shadow:0 4px 15px rgba(0,0,0,0.07);margin-bottom:20px;}
+  .form-card h5{font-weight:800;color:#0d1b3e;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid #f5a623;display:inline-block;}
+  .form-label{font-weight:700;color:#0d1b3e;font-size:0.88rem;margin-bottom:6px;}
+  .form-control,.form-select{border:1.5px solid #dee2e6;border-radius:10px;padding:10px 14px;font-size:0.9rem;}
+  .form-control:focus,.form-select:focus{border-color:#0d1b3e;box-shadow:0 0 0 3px rgba(13,27,62,0.1);}
+  .btn-save{background:#f5a623;color:#0d1b3e;border:none;border-radius:12px;padding:13px 32px;font-weight:800;font-size:0.95rem;cursor:pointer;transition:all 0.2s;}
+  .btn-save:hover{background:#e09415;transform:translateY(-1px);}
+  .img-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .img-slot{border:2px dashed #dee2e6;border-radius:12px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;overflow:hidden;position:relative;background:#f8f9fa;}
+  .img-slot:hover{border-color:#f5a623;}
+  .img-slot.has-img{border-style:solid;border-color:#0d1b3e;}
+  .img-slot img{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;}
+  .img-slot input[type=file]{position:absolute;opacity:0;width:100%;height:100%;cursor:pointer;}
+  .main-badge{position:absolute;top:6px;left:6px;background:#0d1b3e;color:#f5a623;font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:10px;z-index:2;}
+  .existing-img-wrap{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:1;border:2px solid #0d1b3e;}
+  .existing-img-wrap img{width:100%;height:100%;object-fit:cover;}
+  .del-img-btn{position:absolute;top:5px;right:5px;background:#dc3545;color:#fff;border:none;border-radius:50%;width:24px;height:24px;font-size:0.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:3;}
+  .variant-row{display:grid;grid-template-columns:140px 1fr 100px 80px auto;gap:10px;align-items:center;margin-bottom:10px;}
+  .btn-add-variant{background:#f0f4ff;color:#0d1b3e;border:1.5px solid #0d1b3e;border-radius:8px;padding:8px 18px;font-weight:700;font-size:0.85rem;cursor:pointer;}
+  .btn-remove-variant{background:transparent;border:none;color:#dc3545;font-size:1.1rem;cursor:pointer;padding:4px;}
+  .variant-header{display:grid;grid-template-columns:140px 1fr 100px 80px auto;gap:10px;font-size:0.78rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="seller-layout">
+  <div class="sidebar">
+    <div class="sidebar-brand"><i class="bi bi-shop-window"></i>Seller Panel</div>
+    <div class="sidebar-user"><i class="bi bi-person-circle"></i>{{ seller.name }}</div>
+    <a href="/seller/dashboard/"    class="sidebar-link"><i class="bi bi-speedometer2"></i>Dashboard</a>
+    <a href="/seller/products/"     class="sidebar-link active"><i class="bi bi-box-seam"></i>My Products</a>
+    <a href="/seller/product/add/"  class="sidebar-link"><i class="bi bi-plus-circle"></i>Add Product</a>
+    <a href="/seller/orders/"       class="sidebar-link"><i class="bi bi-bag-check"></i>My Orders</a>
+    <a href="/seller/discounts/"    class="sidebar-link"><i class="bi bi-tag"></i>Discounts</a>
+    <a href="/products/"            class="sidebar-link"><i class="bi bi-shop"></i>Visit Store</a>
+    <a href="/accounts/seller-profile/" class="sidebar-link"><i class="bi bi-person-circle"></i>My Profile</a>
+    <a href="/accounts/logout/"     class="sidebar-link logout"><i class="bi bi-box-arrow-right"></i>Logout</a>
+  </div>
+
+  <div class="seller-content">
+    <h2 style="font-weight:800;color:#0d1b3e;margin-bottom:6px;"><i class="bi bi-pencil-fill me-2" style="color:#f5a623;"></i>Edit Product</h2>
+    <p style="color:#888;margin-bottom:24px;">Editing: <strong>{{ product.name }}</strong></p>
+
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <!-- Basic Info -->
+      <div class="form-card">
+        <h5><i class="bi bi-info-circle me-2"></i>Basic Information</h5>
+        <div class="mb-3">
+          <label class="form-label">Product Name *</label>
+          <input type="text" name="name" class="form-control" value="{{ product.name }}" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Description</label>
+          <textarea name="description" class="form-control" rows="5">{{ product.description }}</textarea>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Price (₹) *</label>
+            <input type="number" name="price" class="form-control" value="{{ product.price }}" step="0.01" min="0" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Stock Quantity *</label>
+            <input type="number" name="stock" class="form-control" value="{{ product.stock }}" min="0" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Category</label>
+            <select name="category" class="form-select">
+              <option value="">— Select Category —</option>
+              {% for cat in categories %}
+              <option value="{{ cat.id }}" {% if product.category and product.category.id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Images -->
+      <div class="form-card">
+        <h5><i class="bi bi-images me-2"></i>Product Images</h5>
+
+        <!-- Existing images -->
+        {% if product.image or extra_images %}
+        <p style="font-size:0.82rem;font-weight:700;color:#888;margin-bottom:10px;">Current Images</p>
+        <div class="img-grid" style="margin-bottom:20px;">
+          {% if product.image_url %}
+          <div class="existing-img-wrap">
+            <span class="main-badge">Main</span>
+            <img src="{{ product.image_url }}" alt="main">
+            <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.5);color:#fff;font-size:0.65rem;padding:4px;text-align:center;">Replace below</div>
+          </div>
+          {% endif %}
+          {% for img in extra_images %}
+          <div class="existing-img-wrap">
+            <img src="{{ img.image_url }}" alt="extra">
+            <button type="button" class="del-img-btn" onclick="markDelete(this,'{{ img.id }}')"><i class="bi bi-x"></i></button>
+            <input type="hidden" name="delete_image" value="{{ img.id }}" disabled id="del_{{ img.id }}">
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Replace/Add new -->
+        <p style="font-size:0.82rem;font-weight:700;color:#888;margin-bottom:10px;">Replace Main / Add New Images</p>
+        <div class="img-grid">
+          <div class="img-slot" id="slot_main">
+            <span class="main-badge">Main</span>
+            <input type="file" name="image" accept="image/*" onchange="previewImg(this,'slot_main')">
+            <i class="bi bi-camera-fill" style="font-size:1.8rem;color:#ccc;position:relative;z-index:1;"></i>
+            <span class="slot-label">Change Main</span>
+          </div>
+          {% for n in "2345678" %}
+          <div class="img-slot" id="eslot_{{ n }}">
+            <input type="file" name="image_{{ n }}" accept="image/*" onchange="previewImg(this,'eslot_{{ n }}')">
+            <i class="bi bi-plus-lg" style="font-size:1.4rem;color:#ccc;position:relative;z-index:1;"></i>
+            <span class="slot-label">+ Image</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Variants -->
+      <div class="form-card">
+        <h5><i class="bi bi-sliders me-2"></i>Product Variants</h5>
+        <div class="variant-header">
+          <span>Type</span><span>Value</span><span>Extra Price</span><span>Stock</span><span></span>
+        </div>
+        <div id="variantRows">
+          {% for v in variants %}
+          <div class="variant-row">
+            <select name="variant_type[]" class="form-select" style="font-size:0.85rem;">
+              {% for k,lbl in variant_types %}
+              <option value="{{ k }}" {% if v.variant_type == k %}selected{% endif %}>{{ lbl }}</option>
+              {% endfor %}
+            </select>
+            <input type="text" name="variant_value[]" class="form-control" value="{{ v.value }}" style="font-size:0.85rem;">
+            <input type="number" name="variant_price[]" class="form-control" value="{{ v.price_extra }}" step="0.01" min="0" style="font-size:0.85rem;">
+            <input type="number" name="variant_stock[]" class="form-control" value="{{ v.stock }}" min="0" style="font-size:0.85rem;">
+            <button type="button" class="btn-remove-variant" onclick="this.closest('.variant-row').remove()"><i class="bi bi-x-circle-fill"></i></button>
+          </div>
+          {% endfor %}
+        </div>
+        <button type="button" class="btn-add-variant mt-2" onclick="addVariantRow()">
+          <i class="bi bi-plus-lg me-1"></i>Add Variant
+        </button>
+      </div>
+
+      <div class="d-flex gap-3">
+        <button type="submit" class="btn-save"><i class="bi bi-check-circle-fill me-2"></i>Save Changes</button>
+        <a href="/seller/products/" style="background:transparent;color:#0d1b3e;border:2px solid #dee2e6;border-radius:12px;padding:12px 28px;font-weight:700;font-size:0.95rem;text-decoration:none;display:inline-flex;align-items:center;">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function previewImg(input, slotId) {
+  if (!input.files || !input.files[0]) return;
+  var slot = document.getElementById(slotId);
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var existing = slot.querySelector('img');
+    if (existing) existing.remove();
+    var img = document.createElement('img');
+    img.src = e.target.result;
+    slot.insertBefore(img, slot.firstChild);
+    slot.classList.add('has-img');
+    var icon = slot.querySelector('i.bi-plus-lg, i.bi-camera-fill');
+    var label = slot.querySelector('.slot-label');
+    if (icon) icon.style.display = 'none';
+    if (label) label.style.display = 'none';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function markDelete(btn, imgId) {
+  var input = document.getElementById('del_' + imgId);
+  if (input) {
+    input.disabled = false;
+    btn.closest('.existing-img-wrap').style.opacity = '0.35';
+    btn.innerHTML = '<i class="bi bi-arrow-counterclockwise"></i>';
+    btn.onclick = function() { undoDelete(this, imgId); };
+  }
+}
+function undoDelete(btn, imgId) {
+  var input = document.getElementById('del_' + imgId);
+  if (input) {
+    input.disabled = true;
+    btn.closest('.existing-img-wrap').style.opacity = '1';
+    btn.innerHTML = '<i class="bi bi-x"></i>';
+    btn.onclick = function() { markDelete(this, imgId); };
+  }
+}
+
+var variantTypes = [{% for k,v in variant_types %}{value:"{{k}}",label:"{{v}}"},{% endfor %}];
+function addVariantRow() {
+  var opts = variantTypes.map(function(t){ return '<option value="'+t.value+'">'+t.label+'</option>'; }).join('');
+  var row = document.createElement('div');
+  row.className = 'variant-row';
+  row.innerHTML = `
+    <select name="variant_type[]" class="form-select" style="font-size:0.85rem;">${opts}</select>
+    <input type="text" name="variant_value[]" class="form-control" placeholder="e.g. Red, Large" style="font-size:0.85rem;">
+    <input type="number" name="variant_price[]" class="form-control" placeholder="0" step="0.01" min="0" style="font-size:0.85rem;">
+    <input type="number" name="variant_stock[]" class="form-control" placeholder="0" min="0" style="font-size:0.85rem;">
+    <button type="button" class="btn-remove-variant" onclick="this.closest('.variant-row').remove()"><i class="bi bi-x-circle-fill"></i></button>
+  `;
+  document.getElementById('variantRows').appendChild(row);
+}
+</script>
+{% endblock %}

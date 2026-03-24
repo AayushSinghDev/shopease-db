@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% block title %}Product Detail — Admin{% endblock %}
+{% block extra_css %}<style>
+  .ap-header{background:linear-gradient(135deg,#0d1b3e,#162447);padding:30px 0;color:#fff}
+  .ap-nav{background:#fff;border-bottom:2px solid #f0f0f0;padding:0}
+  .ap-nav a{color:#555;font-weight:600;padding:14px 18px;font-size:.88rem;border-bottom:3px solid transparent;display:inline-block;text-decoration:none}
+  .ap-nav a:hover{color:#0d1b3e}.ap-nav a.active{color:#0d1b3e;border-bottom-color:#f5a623}
+  .detail-card{background:#fff;border-radius:16px;padding:24px;box-shadow:0 4px 15px rgba(0,0,0,.07);margin-bottom:18px}
+  .detail-card h5{font-weight:800;color:#0d1b3e;padding-bottom:10px;border-bottom:2px solid #f5a623;display:inline-block;margin-bottom:16px}
+  .info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f5f5f5;font-size:.9rem}
+  .info-row:last-child{border-bottom:none}.info-label{color:#888;font-weight:600}.info-value{color:#0d1b3e;font-weight:700}
+  .tbl{width:100%;border-collapse:collapse;font-size:.88rem}
+  .tbl th{background:#0d1b3e;color:#f5a623;padding:10px 12px;text-align:left;font-weight:700}
+  .tbl td{padding:10px 12px;border-bottom:1px solid #f5f5f5;vertical-align:middle}
+  .tbl tr:hover td{background:#fafafa}
+  .s-pending{background:#fff3cd;color:#856404;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700}
+  .s-shipped{background:#e8d4f5;color:#4a235a;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700}
+  .s-delivered{background:#d4edda;color:#155724;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700}
+  .s-cancelled{background:#f8d7da;color:#721c24;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700}
+  .stat-mini{background:#f8f9fa;border-radius:12px;padding:16px;text-align:center}
+  .stat-mini .num{font-size:1.6rem;font-weight:900;color:#0d1b3e}.stat-mini .lbl{font-size:.75rem;color:#888;font-weight:600}
+  .img-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+  .img-thumb{border-radius:10px;overflow:hidden;aspect-ratio:1;background:#f0f4ff;}
+  .img-thumb img{width:100%;height:100%;object-fit:cover;}
+</style>{% endblock %}
+{% block content %}
+<div class="ap-header"><div class="container">
+  <a href="/admin-panel/products/" style="color:rgba(255,255,255,0.7);text-decoration:none;font-size:.85rem;"><i class="bi bi-arrow-left me-1"></i>Back to Products</a>
+  <h1 style="font-weight:800;font-size:1.4rem;margin-top:8px;"><i class="bi bi-box-seam me-2" style="color:#f5a623;"></i>{{ product.name|truncatechars:60 }}</h1>
+  <p class="mb-0" style="opacity:.7;font-size:.88rem;">Product ID #{{ product.id }} &nbsp;·&nbsp; Sold by {{ product.seller.name }}</p>
+</div></div>
+<div class="ap-nav"><div class="container">
+  <a href="/accounts/dashboard/admin/"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+  <a href="/admin-panel/sellers/"><i class="bi bi-shop me-1"></i>Sellers</a>
+  <a href="/admin-panel/customers/"><i class="bi bi-people me-1"></i>Customers</a>
+  <a href="/admin-panel/products/" class="active"><i class="bi bi-box-seam me-1"></i>Products</a>
+  <a href="/admin-panel/orders/"><i class="bi bi-bag-check me-1"></i>Orders</a>
+  <a href="/admin-panel/categories/"><i class="bi bi-grid me-1"></i>Categories</a>
+  <a href="/admin-panel/revenue/"><i class="bi bi-bar-chart me-1"></i>Revenue</a>
+  <a href="/admin-panel/reviews/"><i class="bi bi-star-half me-1"></i>Reviews</a>
+</div></div>
+<div class="container py-4">
+  <div class="row g-3 mb-3">
+    <div class="col-md-3"><div class="stat-mini"><div class="num">₹{{ product.price }}</div><div class="lbl">Price</div></div></div>
+    <div class="col-md-3"><div class="stat-mini"><div class="num">{{ product.stock }}</div><div class="lbl">Stock</div></div></div>
+    <div class="col-md-3"><div class="stat-mini"><div class="num">{{ product.avg_rating }}</div><div class="lbl">Avg Rating ★</div></div></div>
+    <div class="col-md-3"><div class="stat-mini"><div class="num">{{ order_items|length }}</div><div class="lbl">Times Ordered</div></div></div>
+  </div>
+  <div class="row g-3">
+    <div class="col-md-5">
+      <!-- Images -->
+      <div class="detail-card">
+        <h5><i class="bi bi-images me-2"></i>Images</h5>
+        <div class="img-grid">
+          {% if product.image_url %}
+          <div class="img-thumb"><img src="{{ product.image_url }}" alt="main"></div>
+          {% endif %}
+          {% for img in images %}
+          <div class="img-thumb"><img src="{{ img.image_url }}" alt="extra"></div>
+          {% endfor %}
+          {% if not product.image and not images %}
+          <div class="img-thumb d-flex align-items-center justify-content-center"><i class="bi bi-image" style="font-size:2rem;color:#ccc;"></i></div>
+          {% endif %}
+        </div>
+      </div>
+      <!-- Info -->
+      <div class="detail-card">
+        <h5><i class="bi bi-info-circle me-2"></i>Details</h5>
+        <div class="info-row"><span class="info-label">Category</span><span class="info-value">{{ product.category.name|default:"—" }}</span></div>
+        <div class="info-row"><span class="info-label">Seller</span><span class="info-value"><a href="/admin-panel/sellers/{{ product.seller.id }}/" style="color:#0d1b3e;">{{ product.seller.name }}</a></span></div>
+        <div class="info-row"><span class="info-label">Added</span><span class="info-value">{{ product.created_at|date:"d M Y" }}</span></div>
+        <div style="margin-top:12px;background:#f8f9fa;border-radius:10px;padding:12px;font-size:.88rem;color:#555;line-height:1.7;">{{ product.description|truncatechars:300 }}</div>
+      </div>
+      {% if variants %}
+      <div class="detail-card">
+        <h5><i class="bi bi-sliders me-2"></i>Variants</h5>
+        <table class="tbl">
+          <thead><tr><th>Type</th><th>Value</th><th>+Price</th><th>Stock</th></tr></thead>
+          <tbody>
+            {% for v in variants %}
+            <tr>
+              <td>{{ v.get_variant_type_display }}</td>
+              <td style="font-weight:600;">{{ v.value }}</td>
+              <td>{% if v.price_extra > 0 %}+₹{{ v.price_extra }}{% else %}—{% endif %}</td>
+              <td>{{ v.stock }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+    </div>
+    <div class="col-md-7">
+      <!-- Reviews -->
+      {% if reviews %}
+      <div class="detail-card">
+        <h5><i class="bi bi-star me-2"></i>Reviews ({{ reviews|length }})</h5>
+        <table class="tbl">
+          <thead><tr><th>Customer</th><th>Rating</th><th>Comment</th><th>Date</th></tr></thead>
+          <tbody>
+            {% for r in reviews %}
+            <tr>
+              <td><a href="/admin-panel/customers/{{ r.customer.id }}/" style="color:#0d1b3e;font-weight:600;text-decoration:none;font-size:.85rem;">{{ r.customer.name }}</a></td>
+              <td style="color:#f5a623;">{% for i in "12345" %}{% if forloop.counter <= r.rating %}★{% else %}☆{% endif %}{% endfor %}</td>
+              <td style="font-size:.82rem;color:#555;">{{ r.comment|truncatechars:50|default:"—" }}</td>
+              <td style="font-size:.78rem;color:#888;">{{ r.created_at|date:"d M Y" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+      <!-- Orders -->
+      <div class="detail-card">
+        <h5><i class="bi bi-bag-check me-2"></i>Order History ({{ order_items|length }})</h5>
+        {% if order_items %}
+        <table class="tbl">
+          <thead><tr><th>Order</th><th>Customer</th><th>Qty</th><th>Total</th><th>Date</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for oi in order_items %}
+            <tr>
+              <td><a href="/admin-panel/orders/{{ oi.order.id }}/" style="color:#f5a623;font-weight:700;font-size:.85rem;text-decoration:none;">#{{ oi.order.pk }}</a></td>
+              <td style="font-size:.85rem;">{{ oi.order.customer.name }}</td>
+              <td>{{ oi.quantity }}</td>
+              <td style="font-weight:700;">₹{{ oi.subtotal }}</td>
+              <td style="font-size:.78rem;color:#888;">{{ oi.order.created_at|date:"d M Y" }}</td>
+              <td><span class="s-{{ oi.order.status }}">{{ oi.order.status|capfirst }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}<p style="color:#bbb;font-size:.9rem;">This product has not been ordered yet.</p>{% endif %}
+      </div>
+      <!-- Admin Actions -->
+      <div class="detail-card">
+        <h5><i class="bi bi-gear me-2"></i>Actions</h5>
+        <form method="POST" action="/admin-panel/products/">
+          {% csrf_token %}
+          <input type="hidden" name="product_id" value="{{ product.id }}">
+          <button type="submit" class="btn btn-danger" style="border-radius:10px;font-weight:700;" onclick="return confirm('Delete this product permanently?')">
+            <i class="bi bi-trash3 me-2"></i>Delete Product
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

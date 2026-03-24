@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% block title %}Seller Dashboard — ShopEase{% endblock %}
+{% block extra_css %}
+<style>
+  .seller-layout { display: flex; min-height: calc(100vh - 70px); }
+  .sidebar { width: 240px; background: #0d1b3e; flex-shrink: 0; padding: 20px 0; }
+  .sidebar-brand { color: #f5a623; font-weight: 800; font-size: 1.1rem; padding: 10px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .sidebar-user { color: rgba(255,255,255,0.6); font-size: 0.8rem; padding: 14px 20px; }
+  .sidebar-link { display: flex; align-items: center; gap: 10px; padding: 12px 20px; color: rgba(255,255,255,0.75); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: all 0.2s; }
+  .sidebar-link:hover, .sidebar-link.active { background: rgba(245,166,35,0.15); color: #f5a623; }
+  .sidebar-link i { font-size: 1rem; width: 18px; }
+  .sidebar-link.logout { color: #ff6b6b; }
+  .sidebar-link.logout:hover { background: rgba(220,53,69,0.15); }
+  .main-content { flex: 1; padding: 30px; background: #f8f9fa; }
+  .stat-card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.07); display: flex; align-items: center; gap: 16px; }
+  .stat-icon { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+  .stat-num { font-size: 1.8rem; font-weight: 900; color: #0d1b3e; }
+  .stat-label { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+  .section-title { font-size: 1.1rem; font-weight: 800; color: #0d1b3e; margin-bottom: 16px; }
+  .recent-order-row { background: #fff; border-radius: 12px; padding: 14px 18px; margin-bottom: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .s-pending   { background: #fff3cd; color: #856404; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+  .s-confirmed { background: #d1ecf1; color: #0c5460; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+  .s-shipped   { background: #e8d4f5; color: #4a235a; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+  .s-delivered { background: #d4edda; color: #155724; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+  .s-cancelled { background: #f8d7da; color: #721c24; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+  .product-thumb { width: 50px; height: 50px; border-radius: 10px; object-fit: cover; background: #f0f4ff; }
+  .product-row { background: #fff; border-radius: 12px; padding: 12px 16px; margin-bottom: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 14px; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="seller-layout">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-brand"><i class="bi bi-shop me-2"></i>Seller Panel</div>
+    <div class="sidebar-user"><i class="bi bi-person-circle me-1"></i>{{ seller.name }}</div>
+    <a href="/seller/dashboard/" class="sidebar-link active"><i class="bi bi-speedometer2"></i>Dashboard</a>
+    <a href="/seller/products/"  class="sidebar-link"><i class="bi bi-box-seam"></i>My Products</a>
+    <a href="/seller/product/add/" class="sidebar-link"><i class="bi bi-plus-circle"></i>Add Product</a>
+    <a href="/seller/orders/"    class="sidebar-link"><i class="bi bi-bag-check"></i>My Orders</a>
+    <a href="/seller/discounts/" class="sidebar-link"><i class="bi bi-tag"></i>Discounts</a>
+    <a href="/products/"         class="sidebar-link"><i class="bi bi-shop"></i>Visit Store</a>
+    <a href="/accounts/seller-profile/" class="sidebar-link"><i class="bi bi-person-circle"></i>My Profile</a>
+    <a href="/accounts/logout/"  class="sidebar-link logout"><i class="bi bi-box-arrow-right"></i>Logout</a>
+  </div>
+
+  <!-- Main -->
+  <div class="main-content">
+    <div style="margin-bottom:30px">
+      <h1 style="font-size:1.8rem;font-weight:900;color:#0d1b3e">
+        Welcome, {{ seller.name }}! 👋
+      </h1>
+      <p style="color:#888;margin:0">Here's your store overview</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#e3f2fd"><i class="bi bi-box-seam" style="color:#1565c0"></i></div>
+          <div><div class="stat-num">{{ total_products }}</div><div class="stat-label">Products</div></div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#e8f5e9"><i class="bi bi-bag-check" style="color:#2e7d32"></i></div>
+          <div><div class="stat-num">{{ total_orders }}</div><div class="stat-label">Total Orders</div></div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#fff8e1"><i class="bi bi-currency-rupee" style="color:#f5a623"></i></div>
+          <div><div class="stat-num">₹{{ total_earnings }}</div><div class="stat-label">Total Earnings</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <!-- Recent Orders -->
+      <div class="col-lg-7">
+        <div class="section-title"><i class="bi bi-clock-history me-2"></i>Recent Orders</div>
+        {% if recent_orders %}
+          {% for order in recent_orders %}
+          <div class="recent-order-row">
+            <div>
+              <div style="font-weight:700;color:#0d1b3e;font-size:0.9rem">
+                Order #{{ order.pk }} — {{ order.customer.name }}
+              </div>
+              <div style="font-size:0.8rem;color:#888;margin-top:3px">
+                {% for item in order.items.all %}
+                  {{ item.product_name }} ×{{ item.quantity }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-weight:800;color:#0d1b3e">₹{{ order.total }}</span>
+              <span class="s-{{ order.status }}">{{ order.status|capfirst }}</span>
+            </div>
+          </div>
+          {% endfor %}
+          <a href="/seller/orders/" style="font-size:0.85rem;color:#f5a623;font-weight:700;text-decoration:none">
+            View all orders →
+          </a>
+        {% else %}
+          <p style="color:#aaa;font-size:0.9rem">No orders yet.</p>
+        {% endif %}
+      </div>
+
+      <!-- Recent Products -->
+      <div class="col-lg-5">
+        <div class="section-title"><i class="bi bi-box-seam me-2"></i>My Products</div>
+        {% if products %}
+          {% for p in products %}
+          <div class="product-row">
+            {% if p.image_url %}
+              <img src="{{ p.image_url }}" class="product-thumb" alt="{{ p.name }}">
+            {% else %}
+              <div class="product-thumb d-flex align-items-center justify-content-center">
+                <i class="bi bi-image" style="color:#c0cce0"></i>
+              </div>
+            {% endif %}
+            <div style="flex:1">
+              <div style="font-weight:700;color:#0d1b3e;font-size:0.9rem">{{ p.name }}</div>
+              <div style="font-size:0.8rem;color:#888">₹{{ p.price }} · Stock: {{ p.stock }}</div>
+            </div>
+          </div>
+          {% endfor %}
+          <a href="/seller/products/" style="font-size:0.85rem;color:#f5a623;font-weight:700;text-decoration:none">
+            Manage all products →
+          </a>
+        {% else %}
+          <p style="color:#aaa;font-size:0.9rem">No products yet.</p>
+          <a href="/seller/product/add/" class="btn btn-warning btn-sm" style="border-radius:8px;font-weight:700;color:#0d1b3e">
+            + Add First Product
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

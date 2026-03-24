@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login — ShopEase | Secure Account Access</title>
+    <meta name="description" content="Login to ShopEase. Access your orders, wishlist, track deliveries. Secure login for customers, sellers and admins.">
+    <meta name="robots" content="noindex, nofollow">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    <style>
+      :root {
+        --navy: #0d1b3e;
+        --navy-light: #162447;
+        --orange: #f5a623;
+        --orange-hover: #e09415;
+      }
+      body {
+        background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Segoe UI", sans-serif;
+      }
+      .login-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        overflow: hidden;
+        width: 100%;
+        max-width: 460px;
+      }
+      .login-header {
+        background: var(--navy);
+        padding: 30px;
+        text-align: center;
+        color: #fff;
+      }
+      .login-header h2 { color: var(--orange); font-weight: 800; margin: 0 0 6px; }
+      .login-header p  { color: rgba(255,255,255,0.7); margin: 0; font-size: 0.875rem; }
+      .login-body { padding: 30px; }
+      .role-selector { display: flex; gap: 8px; margin-bottom: 20px; }
+      .role-btn {
+        flex: 1; padding: 10px 8px; border: 2px solid #e0e0e0; border-radius: 10px;
+        background: #fff; font-size: 0.82rem; font-weight: 600; cursor: pointer;
+        transition: all 0.2s; display: flex; flex-direction: column;
+        align-items: center; gap: 4px; color: #555;
+      }
+      .role-btn i { font-size: 1.2rem; }
+      .role-btn.active { border-color: var(--navy); background: var(--navy); color: #fff; }
+      .form-control { border-radius: 10px; border: 1.5px solid #e0e7ff; padding: 10px 14px; }
+      .form-control:focus { border-color: var(--navy); box-shadow: none; }
+      .btn-login {
+        width: 100%; padding: 13px; background: var(--navy); color: #fff;
+        border: none; border-radius: 10px; font-weight: 700; font-size: 1rem;
+        cursor: pointer; transition: all 0.2s; margin-top: 4px;
+      }
+      .btn-login:hover { background: var(--navy-light); transform: translateY(-1px); }
+      .divider { text-align: center; color: #aaa; font-size: 0.8rem; margin: 18px 0 14px; position: relative; }
+      .divider::before, .divider::after { content:''; position:absolute; top:50%; width:40%; height:1px; background:#eee; }
+      .divider::before { left:0; } .divider::after { right:0; }
+      .register-link { text-align: center; font-size: 0.875rem; color: #666; }
+      .register-link a { color: var(--navy); font-weight: 600; text-decoration: none; }
+      #role-badge {
+        display: inline-block; background: var(--orange); color: var(--navy);
+        font-size: 0.75rem; font-weight: 700; padding: 2px 10px;
+        border-radius: 20px; margin-bottom: 15px;
+      }
+      .alert-custom { border-radius: 8px; font-size: 0.875rem; padding: 10px 14px; }
+      .input-group-text { cursor: pointer; border-radius: 0 10px 10px 0 !important; }
+
+      /* ── FACE LOGIN BUTTON ── */
+      .btn-face {
+        width: 100%; padding: 12px; border: 2px solid var(--navy); color: var(--navy);
+        background: #fff; border-radius: 10px; font-weight: 700; font-size: 0.95rem;
+        cursor: pointer; transition: all 0.2s; display: flex; align-items: center;
+        justify-content: center; gap: 8px; margin-top: 10px;
+      }
+      .btn-face:hover { background: var(--navy); color: #fff; }
+      .btn-face i { font-size: 1.2rem; }
+
+      /* ── FACE MODAL STYLES ── */
+      #faceModal {
+        display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+        z-index: 9999; align-items: center; justify-content: center;
+      }
+      #faceModal.active { display: flex; }
+      .face-box {
+        background: #fff; border-radius: 20px; padding: 28px; width: 360px;
+        max-width: 95vw; text-align: center; position: relative;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      }
+      .face-box h5 { font-weight: 800; color: var(--navy); margin-bottom: 6px; }
+      .face-box p  { color: #666; font-size: 0.85rem; margin-bottom: 16px; }
+      #videoWrap {
+        position: relative; width: 280px; height: 210px; margin: 0 auto 16px;
+        border-radius: 14px; overflow: hidden; background: #111;
+        border: 3px solid var(--navy);
+      }
+      #faceVideo { width: 100%; height: 100%; object-fit: cover; display: block; }
+      #faceCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+      .face-status {
+        font-size: 0.82rem; font-weight: 600; padding: 6px 12px;
+        border-radius: 20px; display: inline-block; margin-bottom: 12px;
+      }
+      .face-status.scanning { background: #fff3cd; color: #856404; }
+      .face-status.found    { background: #d1e7dd; color: #0f5132; }
+      .face-status.error    { background: #f8d7da; color: #842029; }
+      .face-status.loading  { background: #cfe2ff; color: #084298; }
+      #closeFaceModal {
+        position: absolute; top: 14px; right: 16px; background: none; border: none;
+        font-size: 1.4rem; cursor: pointer; color: #aaa; line-height: 1;
+      }
+      #closeFaceModal:hover { color: #333; }
+      .btn-face-action {
+        padding: 10px 24px; border-radius: 10px; font-weight: 700; cursor: pointer;
+        border: none; font-size: 0.9rem; transition: all 0.2s;
+      }
+      .btn-capture { background: var(--navy); color: #fff; }
+      .btn-capture:hover { background: var(--navy-light); }
+      .btn-retry   { background: #dc3545; color: #fff; margin-left: 8px; }
+      .btn-retry:hover { background: #b02a37; }
+    </style>
+  </head>
+  <body>
+    <div class="login-card">
+      <div class="login-header">
+        <h2><i class="bi bi-bag-heart-fill"></i> ShopEase</h2>
+        <p>Your one-stop e-commerce platform</p>
+      </div>
+
+      <div class="login-body">
+        <!-- Role Selector -->
+        <div class="role-selector">
+          <button class="role-btn active" onclick="setRole('customer')" id="btn-customer">
+            <i class="bi bi-person-fill"></i> Customer
+          </button>
+          <button class="role-btn" onclick="setRole('seller')" id="btn-seller">
+            <i class="bi bi-shop"></i> Seller
+          </button>
+          <button class="role-btn" onclick="setRole('admin')" id="btn-admin">
+            <i class="bi bi-shield-lock-fill"></i> Admin
+          </button>
+        </div>
+
+        <div class="text-center">
+          <span id="role-badge">Logging in as: Customer</span>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}{% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-custom alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}{% endif %}
+
+        <!-- Login Form -->
+        <form method="POST" action="{% url 'accounts:login' %}">
+          {% csrf_token %}
+          <input type="hidden" name="role" id="role-input" value="customer" />
+
+          <div class="mb-3">
+            <label class="form-label">Email Address</label>
+            <input type="email" name="email" class="form-control" placeholder="Enter your email" required />
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label">Password</label>
+            <div class="input-group">
+              <input type="password" name="password" id="password-field" class="form-control" placeholder="Enter your password" required />
+              <span class="input-group-text" onclick="togglePassword()">
+                <i class="bi bi-eye" id="eye-icon"></i>
+              </span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-login">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Login
+          </button>
+        </form>
+
+        <!-- Face Login (Customer only) -->
+        <div id="face-login-section">
+          <div class="divider">or</div>
+          <button class="btn-face" onclick="openFaceLogin()">
+            <i class="bi bi-camera-fill"></i> Login with Face Recognition
+          </button>
+        </div>
+
+        <!-- Register Link -->
+        <div class="divider" id="divider-section">or</div>
+        <div class="register-link" id="register-section">
+          Don't have an account? <a href="{% url 'accounts:register' %}">Register here</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── FACE RECOGNITION MODAL ── -->
+    <div id="faceModal">
+      <div class="face-box">
+        <button id="closeFaceModal" onclick="closeFaceLogin()">×</button>
+        <h5><i class="bi bi-camera-fill" style="color:var(--navy);"></i> Face Login</h5>
+        <p id="faceModalSubtitle">Position your face in the frame and click Scan</p>
+
+        <div id="videoWrap">
+          <video id="faceVideo" autoplay muted playsinline></video>
+          <canvas id="faceCanvas"></canvas>
+        </div>
+
+        <div id="faceStatus" class="face-status loading">Loading face models…</div>
+
+        <div id="faceActions" style="display:none;">
+          <button class="btn-face-action btn-capture" id="captureBtn" onclick="captureFace()">
+            <i class="bi bi-camera"></i> Scan My Face
+          </button>
+          <button class="btn-face-action btn-retry" id="retryBtn" onclick="resetFaceScan()" style="display:none;">
+            <i class="bi bi-arrow-clockwise"></i> Retry
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- face-api.js — no install needed, loads from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+    <script>
+      /* ─── Role selector ─────────────────────────────────── */
+      const roleLabels = { customer:"Customer", seller:"Seller", admin:"Super Admin" };
+      function setRole(role) {
+        document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('btn-'+role).classList.add('active');
+        document.getElementById('role-input').value = role;
+        document.getElementById('role-badge').textContent = 'Logging in as: ' + roleLabels[role];
+        const faceSection = document.getElementById('face-login-section');
+        const regSection  = document.getElementById('register-section');
+        const divider     = document.getElementById('divider-section');
+        if (role === 'admin') {
+          regSection.style.display  = 'none';
+          divider.style.display     = 'none';
+          faceSection.style.display = 'none';
+        } else if (role === 'seller') {
+          regSection.style.display  = 'block';
+          divider.style.display     = 'block';
+          faceSection.style.display = 'none'; // only customers
+        } else {
+          regSection.style.display  = 'block';
+          divider.style.display     = 'block';
+          faceSection.style.display = 'block';
+        }
+      }
+
+      function togglePassword() {
+        const field = document.getElementById('password-field');
+        const icon  = document.getElementById('eye-icon');
+        field.type  = field.type === 'password' ? 'text' : 'password';
+        icon.className = field.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+      }
+
+      /* ─── Face Login ─────────────────────────────────────── */
+      let stream       = null;
+      let modelsLoaded = false;
+      const MODEL_URL  = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/model';
+
+      function setStatus(text, cls) {
+        const el = document.getElementById('faceStatus');
+        el.textContent  = text;
+        el.className    = 'face-status ' + cls;
+      }
+
+      async function loadModels() {
+        if (modelsLoaded) return;
+        setStatus('Loading face models…', 'loading');
+        try {
+          await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+          await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+          await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+          modelsLoaded = true;
+          setStatus('Models ready. Position your face and click Scan.', 'found');
+          document.getElementById('faceActions').style.display = 'block';
+          document.getElementById('captureBtn').style.display  = 'inline-block';
+          document.getElementById('retryBtn').style.display    = 'none';
+        } catch(e) {
+          setStatus('Could not load models. Check your internet connection.', 'error');
+        }
+      }
+
+      async function openFaceLogin() {
+        document.getElementById('faceModal').classList.add('active');
+        document.getElementById('faceModalSubtitle').textContent = 'Position your face in the frame and click Scan';
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:'user', width:280, height:210 } });
+          document.getElementById('faceVideo').srcObject = stream;
+        } catch(e) {
+          setStatus('Camera access denied. Please allow camera in browser settings.', 'error');
+          return;
+        }
+        loadModels();
+      }
+
+      function closeFaceLogin() {
+        document.getElementById('faceModal').classList.remove('active');
+        if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+        resetFaceScan();
+      }
+
+      function resetFaceScan() {
+        setStatus(modelsLoaded ? 'Models ready. Position your face and click Scan.' : 'Loading face models…', modelsLoaded ? 'found' : 'loading');
+        document.getElementById('faceActions').style.display = modelsLoaded ? 'block' : 'none';
+        document.getElementById('captureBtn').style.display  = 'inline-block';
+        document.getElementById('retryBtn').style.display    = 'none';
+        // Clear canvas
+        const canvas = document.getElementById('faceCanvas');
+        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+      }
+
+      async function captureFace() {
+        if (!modelsLoaded) { setStatus('Models still loading, please wait…', 'loading'); return; }
+        setStatus('Scanning face…', 'scanning');
+        document.getElementById('captureBtn').disabled = true;
+
+        const video = document.getElementById('faceVideo');
+        const detection = await faceapi
+          .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224 }))
+          .withFaceLandmarks()
+          .withFaceDescriptor();
+
+        if (!detection) {
+          setStatus('No face detected. Look directly at camera and try again.', 'error');
+          document.getElementById('captureBtn').disabled = false;
+          document.getElementById('retryBtn').style.display = 'inline-block';
+          return;
+        }
+
+        // Draw detection box on canvas
+        const canvas = document.getElementById('faceCanvas');
+        const dims   = faceapi.matchDimensions(canvas, video, true);
+        faceapi.draw.drawDetections(canvas, [faceapi.resizeResults(detection, dims)]);
+
+        setStatus('Face detected! Verifying…', 'found');
+
+        // Send descriptor to Django backend
+        const descriptor = Array.from(detection.descriptor);
+        const csrf = document.cookie.split('; ').reduce((acc, c) => {
+          const [k,v] = c.split('=');
+          return k.trim()==='csrftoken' ? v : acc;
+        }, '');
+
+        try {
+          const resp = await fetch('/accounts/face/login/', {
+            method: 'POST',
+            headers: { 'Content-Type':'application/json', 'X-CSRFToken': csrf },
+            body: JSON.stringify({ descriptor })
+          });
+          const data = await resp.json();
+          if (data.success) {
+            setStatus('✅ Welcome, ' + data.name + '! Redirecting…', 'found');
+            closeFaceLogin();
+            setTimeout(() => { window.location.href = data.redirect || '/'; }, 800);
+          } else {
+            setStatus('❌ ' + (data.error || 'Face not recognised.'), 'error');
+            document.getElementById('captureBtn').disabled = false;
+            document.getElementById('retryBtn').style.display = 'inline-block';
+          }
+        } catch(e) {
+          setStatus('Network error. Please try again.', 'error');
+          document.getElementById('captureBtn').disabled = false;
+          document.getElementById('retryBtn').style.display = 'inline-block';
+        }
+      }
+    </script>
+  </body>
+</html>

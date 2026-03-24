@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block title %}Order Confirmed — ShopEase{% endblock %}
+{% block extra_css %}
+<style>
+  .confirm-hero { background: linear-gradient(135deg, #0d1b3e, #162447); padding: 60px 0; text-align: center; color: #fff; }
+  .check-circle { width: 90px; height: 90px; background: #f5a623; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 2.5rem; color: #0d1b3e; }
+  .confirm-hero h1 { font-weight: 800; font-size: 2rem; }
+  .info-card { background: #fff; border-radius: 16px; padding: 28px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.07); }
+  .info-card h5 { font-weight: 700; color: #0d1b3e; border-bottom: 2px solid #f5a623; padding-bottom: 8px; display: inline-block; margin-bottom: 18px; }
+  .order-item-row { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
+  .order-item-row:last-child { border-bottom: none; }
+  .order-img { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; background: #f0f4ff; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+  .total-row { display: flex; justify-content: space-between; font-weight: 800; font-size: 1.2rem; color: #0d1b3e; padding-top: 12px; border-top: 2px solid #0d1b3e; margin-top: 12px; }
+  .addr-block { background: #f8f9fa; border-radius: 10px; padding: 14px 16px; font-size: 0.9rem; color: #444; }
+  .timeline { display: flex; justify-content: space-between; position: relative; padding: 20px 0; }
+  .timeline::before { content: ''; position: absolute; top: 36px; left: 10%; right: 10%; height: 3px; background: #e0e0e0; }
+  .tl-step { text-align: center; flex: 1; position: relative; }
+  .tl-dot { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-size: 1rem; border: 3px solid #e0e0e0; background: #fff; }
+  .tl-dot.active { background: #f5a623; border-color: #f5a623; color: #0d1b3e; }
+  .tl-label { font-size: 0.75rem; font-weight: 600; color: #888; }
+  .tl-label.active { color: #0d1b3e; }
+  .summary-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.9rem; color: #555; border-bottom: 1px solid #f0f0f0; }
+  .pay-badge-cod { background: #e8f5e9; color: #2e7d32; border-radius: 8px; padding: 6px 14px; font-size: 0.82rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
+  .pay-badge-online { background: #e3f2fd; color: #1565c0; border-radius: 8px; padding: 6px 14px; font-size: 0.82rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="confirm-hero">
+  <div class="container">
+    <div class="check-circle"><i class="bi bi-check-lg"></i></div>
+    <h1>Order Placed Successfully!</h1>
+    <p class="text-white-50">Order #{{ order.pk }} confirmed. Thank you for shopping with ShopEase!</p>
+  </div>
+</div>
+
+<div class="container py-4">
+  <div class="row g-4">
+    <div class="col-lg-7">
+
+      <!-- Timeline -->
+      <div class="info-card">
+        <h5><i class="bi bi-truck me-2"></i>Order Status</h5>
+        <div class="timeline">
+          <div class="tl-step"><div class="tl-dot active"><i class="bi bi-check"></i></div><div class="tl-label active">Confirmed</div></div>
+          <div class="tl-step"><div class="tl-dot"><i class="bi bi-box-seam"></i></div><div class="tl-label">Processing</div></div>
+          <div class="tl-step"><div class="tl-dot"><i class="bi bi-truck"></i></div><div class="tl-label">Shipped</div></div>
+          <div class="tl-step"><div class="tl-dot"><i class="bi bi-house-check"></i></div><div class="tl-label">Delivered</div></div>
+        </div>
+      </div>
+
+      <!-- Items -->
+      <div class="info-card">
+        <h5><i class="bi bi-bag-fill me-2"></i>Items Ordered</h5>
+        {% for item in items %}
+        <div class="order-item-row">
+          <div class="order-img">
+            {% if item.product and item.product.image_url %}
+              <img src="{{ item.product.image_url }}" alt="{{ item.product_name }}" style="width:100%;height:100%;object-fit:cover">
+            {% else %}
+              <i class="bi bi-box-seam" style="font-size:1.5rem;color:#c0cce0"></i>
+            {% endif %}
+          </div>
+          <div style="flex:1">
+            <div style="font-weight:700;color:#0d1b3e">{{ item.product_name }}</div>
+            <div style="font-size:0.85rem;color:#888">Qty: {{ item.quantity }} · ₹{{ item.product_price }} each</div>
+          </div>
+          <div style="font-weight:800;color:#0d1b3e">₹{{ item.subtotal }}</div>
+        </div>
+        {% endfor %}
+
+        <div style="margin-top:14px">
+          <div class="summary-row"><span>Subtotal</span><span>₹{{ order.subtotal }}</span></div>
+          {% if order.discount_amount %}<div class="summary-row" style="color:#28a745"><span>Discount ({{ order.discount_code }})</span><span>- ₹{{ order.discount_amount }}</span></div>{% endif %}
+          <div class="summary-row"><span>GST (5%)</span><span>₹{{ order.tax }}</span></div>
+          <div class="summary-row"><span>Shipping</span><span>{% if order.shipping == 0 %}<span class="text-success fw-bold">FREE</span>{% else %}₹{{ order.shipping }}{% endif %}</span></div>
+        </div>
+        <div class="total-row">
+          <span>Grand Total</span>
+          <span>₹{{ order.total }}</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="col-lg-5">
+
+      <!-- Payment Info -->
+      <div class="info-card">
+        <h5><i class="bi bi-credit-card-fill me-2"></i>Payment</h5>
+        {% if order.payment_method == 'razorpay' %}
+          <span class="pay-badge-online"><i class="bi bi-shield-lock-fill"></i> Paid Online — Razorpay</span>
+          {% if order.payment_id %}
+          <div style="font-size:0.8rem; color:#888; margin-top:8px;">Payment ID: {{ order.payment_id }}</div>
+          {% endif %}
+        {% else %}
+          <span class="pay-badge-cod"><i class="bi bi-cash-coin"></i> Cash on Delivery</span>
+          <div style="font-size:0.82rem; color:#666; margin-top:8px;">Pay ₹{{ order.total }} in cash when order arrives.</div>
+        {% endif %}
+      </div>
+
+      {% if address %}
+      <div class="info-card">
+        <h5><i class="bi bi-geo-alt-fill me-2"></i>Delivery Address</h5>
+        <div class="addr-block">
+          <strong>{{ address.name }}</strong>
+          {% if address.phone %}<br>{{ address.phone }}{% endif %}
+          <br>{{ address.house }}
+          <br>{{ address.city }}, {{ address.state }} — {{ address.pincode }}
+          <br>India
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="info-card">
+        <h5><i class="bi bi-info-circle-fill me-2"></i>What's Next?</h5>
+        <ul style="font-size:0.9rem;color:#555;padding-left:18px;line-height:2">
+          <li>Seller will confirm your order shortly.</li>
+          <li>You'll receive items via courier.</li>
+          {% if order.payment_method == 'razorpay' %}
+          <li>Payment already received — nothing to pay on delivery.</li>
+          {% else %}
+          <li>Pay ₹{{ order.total }} in cash at delivery.</li>
+          {% endif %}
+          <li>Track your order in My Orders.</li>
+        </ul>
+        <div class="d-flex gap-2 mt-3 flex-wrap">
+          <a href="/cart/my-orders/{{ order.pk }}/" class="btn" style="background:#f5a623;color:#0d1b3e;border-radius:10px;font-weight:700;border:none;">
+            <i class="bi bi-printer-fill me-2"></i>Print Invoice
+          </a>
+          <a href="/cart/my-orders/" class="btn btn-dark" style="border-radius:10px;font-weight:700">
+            <i class="bi bi-bag me-1"></i>My Orders
+          </a>
+          <a href="/products/" class="btn btn-outline-secondary" style="border-radius:10px;font-weight:700">
+            <i class="bi bi-shop me-1"></i>Continue Shopping
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

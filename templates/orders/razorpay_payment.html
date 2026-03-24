@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block title %}Pay Securely — ShopEase{% endblock %}
+
+{% block extra_css %}
+<style>
+  .pay-header { background: linear-gradient(135deg, #0d1b3e, #162447); padding: 40px 0; color: #fff; text-align: center; }
+  .pay-card { background: #fff; border-radius: 20px; padding: 36px; box-shadow: 0 8px 32px rgba(0,0,0,0.10); max-width: 480px; margin: 40px auto; }
+  .pay-logo { font-size: 1.8rem; font-weight: 900; color: #0d1b3e; margin-bottom: 6px; }
+  .pay-logo span { color: #f5a623; }
+  .amount-display { background: linear-gradient(135deg, #0d1b3e, #162447); color: #fff; border-radius: 14px; padding: 22px; text-align: center; margin: 20px 0; }
+  .amount-value { font-size: 2.4rem; font-weight: 900; color: #f5a623; }
+  .amount-label { font-size: 0.85rem; opacity: 0.7; margin-top: 4px; }
+  .order-info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 0.88rem; }
+  .order-info-row:last-child { border-bottom: none; }
+  .btn-pay { background: #528FF0; color: #fff; border: none; border-radius: 12px; padding: 15px; font-weight: 800; font-size: 1rem; width: 100%; cursor: pointer; transition: all 0.25s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .btn-pay:hover { background: #3a7ae0; transform: translateY(-1px); box-shadow: 0 4px 15px rgba(82,143,240,0.4); }
+  .btn-demo { background: #f5a623; color: #0d1b3e; border: none; border-radius: 12px; padding: 15px; font-weight: 800; font-size: 1rem; width: 100%; cursor: pointer; transition: all 0.25s; margin-top: 10px; }
+  .btn-demo:hover { background: #e09415; transform: translateY(-1px); }
+  .secure-badge { display: flex; align-items: center; justify-content: center; gap: 8px; color: #888; font-size: 0.8rem; margin-top: 14px; }
+  .demo-notice { background: #fff3cd; border: 1px solid #ffc107; border-radius: 10px; padding: 12px 16px; font-size: 0.85rem; color: #856404; margin-bottom: 16px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pay-header">
+  <div class="container">
+    <h1 style="font-weight:800; font-size:1.8rem;"><i class="bi bi-shield-lock-fill me-2"></i>Secure Payment</h1>
+    <p class="mb-0 text-white-50">Complete your payment to confirm the order</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="pay-card">
+    <div class="pay-logo text-center">Shop<span>Ease</span></div>
+
+    {% if demo_mode %}
+    <div class="demo-notice mt-3">
+      <i class="bi bi-info-circle-fill me-2"></i>
+      <strong>Demo Mode:</strong> Razorpay keys not configured in settings.py. Use "Simulate Payment" to test the full flow without real payment.
+    </div>
+    {% endif %}
+
+    <div class="amount-display">
+      <div class="amount-label">Total Amount to Pay</div>
+      <div class="amount-value">₹{{ grand_total }}</div>
+      <div class="amount-label">Order #{{ rzp_order_id }}</div>
+    </div>
+
+    <div style="background:#f8f9fa; border-radius:12px; padding:16px; margin-bottom:20px;">
+      <div class="order-info-row"><span style="color:#888">Customer</span><span style="font-weight:600">{{ customer.name }}</span></div>
+      <div class="order-info-row"><span style="color:#888">Email</span><span style="font-weight:600">{{ customer.email }}</span></div>
+      <div class="order-info-row"><span style="color:#888">Subtotal</span><span>₹{{ cart_total }}</span></div>
+      {% if discount_amount %}<div class="order-info-row" style="color:#28a745"><span>Discount</span><span>- ₹{{ discount_amount }}</span></div>{% endif %}
+      <div class="order-info-row"><span style="color:#888">GST (5%)</span><span>₹{{ tax }}</span></div>
+      <div class="order-info-row"><span style="color:#888">Shipping</span><span>{% if shipping == 0 %}FREE{% else %}₹{{ shipping }}{% endif %}</span></div>
+    </div>
+
+    {% if not demo_mode %}
+    <!-- Real Razorpay Button -->
+    <button class="btn-pay" onclick="openRazorpay()">
+      <img src="https://razorpay.com/favicon.png" style="width:22px;height:22px;border-radius:4px;" onerror="this.style.display='none'">
+      Pay ₹{{ grand_total }} Securely
+    </button>
+    {% endif %}
+
+    <!-- Demo / Simulate Button -->
+    <form method="POST" action="/cart/razorpay/verify/" id="verifyForm">
+      {% csrf_token %}
+      <input type="hidden" name="razorpay_payment_id" id="hdPaymentId" value="">
+      <input type="hidden" name="razorpay_order_id"   id="hdOrderId"   value="{{ rzp_order_id }}">
+      <input type="hidden" name="razorpay_signature"  id="hdSignature"  value="">
+      <input type="hidden" name="demo_payment"        id="hdDemo"       value="">
+      {% if demo_mode %}
+      <button type="button" class="btn-demo" onclick="simulatePayment()">
+        <i class="bi bi-play-circle-fill me-2"></i>Simulate Successful Payment (Demo)
+      </button>
+      {% endif %}
+    </form>
+
+    <a href="/cart/checkout/" class="btn btn-outline-secondary w-100 mt-3" style="border-radius:10px; font-weight:600;">
+      <i class="bi bi-arrow-left me-1"></i>Back to Checkout
+    </a>
+
+    <div class="secure-badge">
+      <i class="bi bi-lock-fill"></i> 256-bit SSL Encrypted &nbsp;·&nbsp; Powered by Razorpay
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if not demo_mode %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+function openRazorpay() {
+  var options = {
+    key:         '{{ rzp_key_id }}',
+    amount:      {{ amount_paise }},
+    currency:    'INR',
+    name:        'ShopEase',
+    description: 'Order Payment',
+    order_id:    '{{ rzp_order_id }}',
+    prefill: {
+      name:  '{{ customer.name }}',
+      email: '{{ customer.email }}',
+      contact: '{{ customer.phone }}',
+    },
+    theme: { color: '#0d1b3e' },
+    handler: function(response) {
+      document.getElementById('hdPaymentId').value = response.razorpay_payment_id;
+      document.getElementById('hdOrderId').value   = response.razorpay_order_id;
+      document.getElementById('hdSignature').value  = response.razorpay_signature;
+      document.getElementById('verifyForm').submit();
+    },
+    modal: {
+      ondismiss: function() {
+        alert('Payment cancelled. You can retry or go back to checkout.');
+      }
+    }
+  };
+  var rzp = new Razorpay(options);
+  rzp.open();
+}
+</script>
+{% endif %}
+
+<script>
+function simulatePayment() {
+  if (!confirm('Simulate a successful payment? (Demo only — no real money charged)')) return;
+  document.getElementById('hdPaymentId').value = 'demo_pay_' + Date.now();
+  document.getElementById('hdDemo').value      = '1';
+  document.getElementById('verifyForm').submit();
+}
+</script>
+{% endblock %}
